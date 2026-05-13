@@ -68,6 +68,7 @@ KAROL BAGH, NEW DELHI – 110005</textarea></div>
         <button class="warning" onclick="autoFill()">2. Auto-Fill</button>
         <button id="dmsToggle" class="secondary" onclick="toggleDMS()">DMS Mode: OFF</button>
         <button class="success" onclick="exportPDF()">3. Download PDF</button>
+        <button class="secondary" onclick="exportWord()">Word</button>
         <button class="secondary" onclick="exportExcel()">Excel</button>
         <button class="danger" onclick="clearDraft()">Clear</button>
         <button class="secondary" id="loadBtn" style="display:none" onclick="loadDraft()">Load</button>
@@ -85,7 +86,7 @@ KAROL BAGH, NEW DELHI – 110005</textarea></div>
 </div>
 
 <script>
-const { jsPDF } = window.jspdf;
+const jsPDF = window.jspdf?.jsPDF;
 let roster=null, students=[], leaveMap={}, dmsMode=false, y3=[], y2=[], y1=[];
 const KEY='kaya_v3';
 const INDIAN_HOLIDAYS={'2026-01-26':'Republic Day','2026-03-08':'Maha Shivratri','2026-03-14':'Holi','2026-04-03':'Good Friday','2026-04-14':'Ambedkar Jayanti','2026-05-01':'Labour Day','2026-08-15':'Independence Day','2026-10-02':'Gandhi Jayanti','2026-10-20':'Diwali','2026-12-25':'Christmas'};
@@ -99,6 +100,8 @@ function initTable(){
   const mv=document.getElementById('month').value; if(!mv) return toast('Pick month');
   getStudents(); parseLeaves(); const [yr,mo]=mv.split('-').map(Number); const dim=new Date(yr,mo,0).getDate();
   const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean);
+  // merge built-in Indian holidays (hidden)
+  Object.entries(INDIAN_HOLIDAYS).forEach(([d,name])=>{const [y,m,day]=d.split('-').map(Number); if(y===yr&&m===mo&&!hols.includes(day)) hols.push(day);});
   roster={year:yr,month:mo,hospital:document.getElementById('hospital').value,data:[]};
   for(let d=1;d<=dim;d++){ const dt=new Date(yr,mo-1,d); roster.data.push({date:`${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${yr}`,dayName:dt.toLocaleDateString('en-US',{weekday:'long'}),day:d,isSun:dt.getDay()===0,isSat:dt.getDay()===6,isHol:hols.includes(d),m:'',e:'',n:'',mM:false,eM:false,nM:false,mD:false,eD:false,nD:false});}
   save(); render(); updateGCalList();
@@ -130,39 +133,33 @@ function setDuty(i,sh,val){ const r=roster.data[i]; if(val&&isLeave(val,r.day)){
 function toggleDMS(){ dmsMode=!dmsMode; const b=document.getElementById('dmsToggle'); b.textContent=`DMS Mode: ${dmsMode?'ON':'OFF'}`; b.classList.toggle('dms-active',dmsMode); }
 
 function autoFill(){
-  if(!roster) return toast('Create table first'); parseLeaves(); const {data}=roster; const nightOff=document.getElementById('nightOffRule').checked; const morningOnly=document.getElementById('morningSundayHoliday').checked;
-  const cnt={}; students.forEach(s=>cnt[s]={total:0,bad:0,morning:0}); data.forEach(r=>{ [['m',r.m],['e',r.e],['n',r.n]].forEach(([sh,doc])=>{ if(!doc) return; cnt[doc].total++; if(sh==='m') cnt[doc].morning++; if(r.isSat&&(sh==='e'||sh==='n')) cnt[doc].bad++; }); });
+  if(!roster) return toast('Create table first'); parseLeaves(); const {data}=roster; const nightOff=document.getElementById('nightOffRule').checked;
+  
+  // keep manual/DMS entries, clear previous auto fills for rebalance
+  data.forEach(r=>{ if(!r.mM){ r.m=''; r.mD=false; } if(!r.eM){ r.e=''; r.eD=false; } if(!r.nM){ r.n=''; r.nD=false; } });
+  
+  const cnt={}; students.forEach(s=>cnt[s]={total:0,good:0,bad:0});
+  const dutyQuality=(r,sh,idx)=>{ const nxt=data[idx+1]; const preHol=nxt?.isHol; if(sh==='n'){ if(r.isSat||preHol) return -1; if(r.isSun||r.isHol) return 0; return 1;} if(sh==='e'){ if(r.isSat||r.isSun||r.isHol) return -1; return 0;} if(sh==='m') return -1; return 0; };
+  data.forEach((r,i)=>{ [['m',r.m],['e',r.e],['n',r.n]].forEach(([sh,doc])=>{ if(!doc) return; cnt[doc].total++; const q=dutyQuality(r,sh,i); if(q>0) cnt[doc].good++; else if(q<0) cnt[doc].bad++; }); });
 
-  // Morning: Sundays to 1st year, holidays to 2nd year, no repeats
-  const sunHols=data.filter(r=>(r.isSun||r.isHol)&&!r.m);
-  const y1Avail=[...y1], y2Avail=[...y2]; 
-  sunHols.forEach(r=>{
-    let assigned=false;
-    if(r.isSun){
-      for(let s of y1Avail){
-        if(!isLeave(s,r.day)&&s!==r.e&&s!==r.n&&(!nightOff||!data[r.day-2]?.n||data[r.day-2].n!==s)&&cnt[s].morning===0){
-          r.m=s; r.mM=false; r.mD=false; cnt[s].total++; cnt[s].morning++; assigned=true; break;
-        }
-      }
-    }
-    if(!assigned&&r.isHol&&!r.isSun){
-      for(let s of y2Avail){
-        if(!isLeave(s,r.day)&&s!==r.e&&s!==r.n&&(!nightOff||!data[r.day-2]?.n||data[r.day-2].n!==s)&&cnt[s].morning===0){
-          r.m=s; r.mM=false; r.mD=false; cnt[s].total++; cnt[s].morning++; assigned=true; break;
-        }
-      }
-    }
-  });
+  const weight=s=> y3.includes(s)?1.3 : y2.includes(s)?1.1 : 1.0;
+  const seniorBonus=(s,q)=> q>0 ? (y3.includes(s)?0.4:y2.includes(s)?0.2:0) : q<0 ? (y1.includes(s)?0.3:y2.includes(s)?0.15:0) : 0;
 
-  const pick=(used,dayIdx,day,sh,isSat)=>{ return students.filter(s=>!used.has(s)&&!isLeave(s,day)&&!(nightOff&&dayIdx>0&&data[dayIdx-1].n===s)).sort((a,b)=>{ const wa=getYear(a)===3?0.85:getYear(a)===2?1:1.15; const wb=getYear(b)===3?0.85:getYear(b)===2?1:1.15; const sa=cnt[a].total/wa + cnt[a].bad*0.6; const sb=cnt[b].total/wb + cnt[b].bad*0.6; return sa-sb; })[0]; };
+  // Morning assignments - Sundays & holidays (respect manual locks)
+  const suns=data.filter(r=>r.isSun&&!r.m);
+  const hols=data.filter(r=>r.isHol&&!r.isSun&&!r.m);
+  let p1=[...y1], p2=[...y2];
+  suns.forEach((r,idx)=>{ const pool = idx < y1.length ? p1 : p2; for(let k=0;k<pool.length*2;k++){ const s=pool[0]; if(!isLeave(s,r.day)&&(!nightOff||!data[r.day-2]?.n||data[r.day-2].n!==s)&&s!==r.e&&s!==r.n){ r.m=s; r.mM=false; cnt[s].total++; cnt[s].bad++; pool.push(pool.shift()); break;} pool.push(pool.shift()); } });
+  hols.forEach(r=>{ for(let k=0;k<p2.length*2;k++){ const s=p2[0]; if(!isLeave(s,r.day)&&(!nightOff||!data[r.day-2]?.n||data[r.day-2].n!==s)&&s!==r.e&&s!==r.n){ r.m=s; r.mM=false; cnt[s].total++; cnt[s].bad++; p2.push(p2.shift()); break;} p2.push(p2.shift()); } });
+
+  const pick=(r,idx,sh)=>{ const q=dutyQuality(r,sh,idx); return students.filter(s=>!isLeave(s,r.day)&&s!==r.m&&s!==r.e&&s!==r.n&&!(nightOff&&idx>0&&data[idx-1].n===s)).sort((a,b)=>{ const sa=cnt[a].total/weight(a)+cnt[a].bad*0.6-cnt[a].good*0.3 - seniorBonus(a,q); const sb=cnt[b].total/weight(b)+cnt[b].bad*0.6-cnt[b].good*0.3 - seniorBonus(b,q); return sa-sb; })[0]; };
 
   data.forEach((r,idx)=>{
-    let used=new Set([r.m,r.e,r.n].filter(Boolean));
-    if(!r.n){ const c=pick(used,idx,r.day,'n',r.isSat); if(c){ r.n=c; r.nM=false; r.nD=false; cnt[c].total++; if(r.isSat) cnt[c].bad++; used.add(c);} }
-    if(!r.e){ const c=pick(used,idx,r.day,'e',r.isSat); if(c){ r.e=c; r.eM=false; r.eD=false; cnt[c].total++; if(r.isSat) cnt[c].bad++; } }
+    if(!r.n){ const c=pick(r,idx,'n'); if(c){ r.n=c; r.nM=false; r.nD=false; cnt[c].total++; const q=dutyQuality(r,'n',idx); if(q>0) cnt[c].good++; else if(q<0) cnt[c].bad++; } }
+    if(!r.e){ const c=pick(r,idx,'e'); if(c){ r.e=c; r.eM=false; r.eD=false; cnt[c].total++; const q=dutyQuality(r,'e',idx); if(q>0) cnt[c].good++; else if(q<0) cnt[c].bad++; } }
   });
 
-  save(); render(); toast('Auto-fill complete','success');
+  save(); render(); toast('Auto-fill rebalanced (manual locks kept)','success');
 }
 
 function updateGCalList(){
@@ -176,21 +173,26 @@ function addToGCal(date,title){ const url=`https://calendar.google.com/calendar/
 function addAllHolidays(){ if(!roster) return; const {year,month}=roster; const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean); hols.forEach((d,i)=>{ const dt=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`; setTimeout(()=>addToGCal(dt,'Holiday'),i*200); }); toast('Opening Google Calendar tabs...','success'); }
 
 function exportPDF(){
-  if(!roster) return toast('Create first'); const {data,year,month,hospital}=roster; const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const doc=new jsPDF({format:'a4'}); doc.setFont('times','normal'); let y=15; doc.setFontSize(12); hospital.split('\n').forEach(l=>{doc.text(l,105,y,{align:'center'});y+=5}); doc.setFontSize(11); doc.text(`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${monthName}`,105,y,{align:'center'}); y+=8;
-  const body=data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']); const fs=Math.min(8.5,Math.floor((297-58)/(data.length+1)*1.7));
-  
-  doc.autoTable({startY:y,head:[['Date','Day','Morning','Evening','Night']],body,styles:{font:'times',fontSize:fs,cellPadding:1.3,lineColor:0,lineWidth:.1},headStyles:{font:'times',fontStyle:'bold',fillColor:[30,64,175],textColor:255,lineWidth:.3},columnStyles:{0:{cellWidth:24},1:{cellWidth:28},2:{cellWidth:38},3:{cellWidth:38},4:{cellWidth:38}},margin:{left:15,right:15,bottom:30},didParseCell:d=>{
-    if(d.section==='body'){
-      const r=data[d.row.index];
-      if(d.row.raw[1]==='Sunday'||r.isHol){ d.cell.styles.fillColor=[220,235,255]; if(d.column.index===0) d.cell.styles.fontStyle='bold'; }
-      if(d.column.index===2&&r.mD) d.cell.styles.fontStyle='bold';
-      if(d.column.index===3&&r.eD) d.cell.styles.fontStyle='bold';
-      if(d.column.index===4&&r.nD) d.cell.styles.fontStyle='bold';
-    }
-  }});
-  
-  let fy=doc.lastAutoTable.finalY+5; doc.setFontSize(8.5); doc.text('The next day of night duty will be considered as off.',15,fy); doc.text('The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.',15,fy+3.5); doc.text('Copy to:',15,fy+10); doc.text('All PG Students',15,fy+13.5); doc.setFont('times','bold'); doc.text('Dr Sujata Yadav',150,fy+20); doc.setFont('times','normal'); doc.text('HOD, Department of Kayachikitsa',150,fy+23.5); doc.save(`Kayachikitsa_${monthName.replace(' ','_')}.pdf`);
+  if(!roster||!jsPDF) return toast('Create first or PDF lib missing'); const {data,year,month,hospital}=roster; const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const doc=new jsPDF({format:'a4'}); doc.setFont('times','normal'); let y=14; doc.setFontSize(12); hospital.split('\n').forEach(l=>{doc.text(l.trim(),105,y,{align:'center'});y+=5.5}); doc.setFontSize(11); doc.text(`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${monthName}`,105,y,{align:'center'}); y+=8;
+  const body=data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']);
+  doc.autoTable({startY:y,head:[['Date','Day','Morning','Evening','Night']],body,styles:{font:'times',fontSize:8.2,cellPadding:1.4,lineColor:[180,200,220],lineWidth:0.1},headStyles:{fillColor:[0,176,190],textColor:255,fontStyle:'bold',halign:'center'},columnStyles:{0:{halign:'center',cellWidth:20},1:{halign:'center',cellWidth:24},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'}},margin:{left:12,right:12,bottom:15},pageBreak:'avoid',didParseCell:d=>{ if(d.section==='body'){ const r=data[d.row.index]; const isHol=r.isHol; const isSun=d.row.raw[1]==='Sunday'; if(isHol||isSun){ d.cell.styles.fillColor=[197,231,239]; }
+    if(d.column.index===2 && r.mD) d.cell.styles.fontStyle='bold';
+    if(d.column.index===3 && r.eD) d.cell.styles.fontStyle='bold';
+    if(d.column.index===4 && r.nD) d.cell.styles.fontStyle='bold';
+  } }});
+  let fy=doc.lastAutoTable.finalY+6; doc.setFontSize(9.5); doc.text('The next day of night duty will be considered as off.',14,fy); doc.text('The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.',14,fy+5); doc.text('Copy to:',14,fy+12); doc.text('All PG Students',14,fy+17); doc.setFont('times','bold'); doc.text('Dr Sujata Yadav',150,fy+24); doc.setFont('times','normal'); doc.text('HOD, Department of Kayachikitsa',150,fy+29); doc.save(`Kayachikitsa_${monthName.replace(' ','_')}.pdf`);
+}
+
+function exportWord(){
+  if(!roster) return toast('Create first');
+  const {data,year,month,hospital}=roster; const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="UTF-8"><title>Roster</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt 36pt 36pt 36pt;}div.WordSection1{page:WordSection1;}body{font-family:"Times New Roman",serif;font-size:10pt}h3{margin:1pt 0;text-align:center;font-size:12pt}h4{margin:2pt 0;text-align:center;font-size:11pt;font-weight:normal}table{border-collapse:collapse;width:100%;table-layout:fixed}col.c1{width:9%}col.c2{width:12%}col.c3{width:26.3%}col.c4{width:26.3%}col.c5{width:26.4%}th{background:#00b0be;color:#fff;padding:2pt 1pt;border:0.5pt solid #444;font-size:9.5pt;text-align:center}td{border:0.5pt solid #777;padding:1.5pt 1pt;text-align:center;font-size:9pt;line-height:1.05;vertical-align:middle}tr{page-break-inside:avoid}.hol{background:#eef7fa}.dms{font-weight:bold}p{margin:3pt 0;font-size:9.5pt}</style></head><body><div class="WordSection1">`;
+  hospital.split('\n').forEach(l=>html+=`<h3>${l}</h3>`);
+  html+=`<h4>Duty roster for PG students of Dept. of KAYACHIKITSA for ${monthName}</h4><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><tr><th>Date</th><th>Day</th><th>Morning</th><th>Evening</th><th>Night</th></tr>`;
+  data.forEach(r=>{const c=r.isHol||r.dayName==='Sunday'?' class="hol"':'';const m=r.mD?`<span class="dms">${r.m||'-'}</span>`:r.m||'-';const e=r.eD?`<span class="dms">${r.e||'-'}</span>`:r.e||'-';const n=r.nD?`<span class="dms">${r.n||'-'}</span>`:r.n||'-';html+=`<tr${c}><td>${r.date}</td><td>${r.dayName.substring(0,3)}</td><td>${m}</td><td>${e}</td><td>${n}</td></tr>`});
+  html+=`</table><p>The next day of night duty will be considered as off.<br>The duty will not be interchanged without prior permission of HOD.</p><p>Copy to: All PG Students</p><p style="text-align:right;margin-top:12pt"><b>Dr Sujata Yadav</b><br>HOD, Kayachikitsa</p></div></body></html>`;
+  const blob=new Blob(['\ufeff',html],{type:'application/msword'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Kayachikitsa_${monthName.replace(' ','_')}.doc`;a.click();toast('Word exported – portrait, 1 page','success');
 }
 
 function exportExcel(){ if(!roster) return; const {data,year,month,hospital}=roster; const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'}); const ws=XLSX.utils.aoa_to_sheet([...hospital.split('\n').map(l=>[l]),[`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${mn}`],[],['Date','Day','Morning','Evening','Night'],...data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']),[],['The next day of night duty will be considered as off.'],['The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.'],[],['Copy to:'],['All PG Students'],[],['','','','Dr Sujata Yadav'],['','','','HOD, Department of Kayachikitsa']]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Roster'); XLSX.writeFile(wb,`Kayachikitsa_${mn.replace(' ','_')}.xlsx`); }
@@ -203,4 +205,4 @@ function toast(msg,type='danger'){ const t=document.createElement('div'); t.clas
 window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('month').value=new Date().toISOString().slice(0,7); if(localStorage.getItem(KEY)) document.getElementById('loadBtn').style.display='inline-block'; });
 </script>
 </body>
-</html>
+</htmlfunction exportWord(){
