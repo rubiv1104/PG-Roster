@@ -2,207 +2,1039 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kayachikitsa Roster - Pro</title>
+<title>Kayachikitsa Roster</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root { --bg:#0f172a; --card:rgba(30,41,59,.92); --border:rgba(148,163,184,.15); --text:#f1f5f9; --muted:#94a3b8; --primary:#3b82f6; --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --dms:#8b5cf6; --holiday:#1e40af; --sunday:#1e3a8a; }
-  *{box-sizing:border-box;margin:0;padding:0} body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:var(--text);padding:20px;min-height:100vh}
-.main-wrap{display:grid;grid-template-columns:1fr 320px;gap:20px;max-width:1900px;margin:0 auto}
-.container{min-width:0}.header{text-align:center;margin-bottom:24px}.header h1{font-size:32px;font-weight:700;background:linear-gradient(135deg,#60a5fa,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.config,.gcal-panel{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px}
-.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px}
-  input,select,textarea{width:100%;background:rgba(15,23,42,.85);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
-.checkbox-group{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}.checkbox-row{display:flex;align-items:center;gap:8px}.checkbox-row input{width:16px;height:16px}
-.btn-group{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
-  button{background:linear-gradient(135deg,var(--primary),#2563eb);color:#fff;border:none;border-radius:8px;padding:11px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-  button:hover{transform:translateY(-1px)}button.secondary{background:rgba(71,85,105,.6)}button.success{background:linear-gradient(135deg,var(--success),#059669)}button.warning{background:linear-gradient(135deg,var(--warning),#d97706)}button.danger{background:linear-gradient(135deg,var(--danger),#dc2626)}button.dms-active{background:linear-gradient(135deg,var(--dms),#7c3aed)!important}
-.table-wrap{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:18px;padding:22px;overflow-x:auto}
-  table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}thead th{background:rgba(59,130,246,.18);color:#93c5fd;padding:11px 9px;text-align:left;font-weight:600;border-bottom:2px solid var(--primary)}
-  tbody td{padding:3px;border-bottom:1px solid var(--border);position:relative}
-  tbody tr.sunday{background:rgba(30,58,138,.35);border-left:4px solid var(--sunday)}tbody tr.holiday{background:rgba(30,64,175,.35);border-left:4px solid var(--holiday)}tbody tr.sunday td:first-child,tbody tr.holiday td:first-child{font-weight:700;color:#93c5fd}
-  select.duty-select{width:100%;background:rgba(15,23,42,.9);border:1px solid var(--border);border-radius:5px;padding:6px 8px;color:var(--text);font-size:11px;cursor:pointer}
-  select.duty-select:disabled{background:rgba(71,85,105,.3);color:var(--muted);cursor:not-allowed;text-decoration:line-through;opacity:.6}
-  select.duty-select.manual{background:rgba(245,158,11,.15);border-color:var(--warning)}select.duty-select.dms{background:rgba(139,92,246,.22);border-color:var(--dms);box-shadow:0 0 0 2px rgba(139,92,246,.18)}select.duty-select.filled{background:rgba(16,185,129,.14);border-color:var(--success)}select.duty-select.conflict{background:rgba(239,68,68,.22);border-color:var(--danger);animation:pulse 1s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}.conflict-badge{position:absolute;top:1px;right:1px;background:var(--danger);color:#fff;font-size:8px;padding:1px 4px;border-radius:3px;font-weight:700}
-.stats{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.stat-card{background:rgba(15,23,42,.6);border:1px solid var(--border);border-radius:9px;padding:10px 14px;flex:1;min-width:130px}.stat-card h4{font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase}.stat-card.value{font-size:20px;font-weight:700;color:#06b6d4}
-.legend{display:flex;gap:12px;margin:10px 0;font-size:11px;flex-wrap:wrap}.legend-item{display:flex;align-items:center;gap:5px}.legend-box{width:16px;height:16px;border-radius:3px}
-.toast{position:fixed;top:18px;right:18px;background:var(--danger);color:#fff;padding:10px 16px;border-radius:9px;box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:1000;animation:slideIn.25s;font-size:12px}@keyframes slideIn{from{transform:translateX(300px);opacity:0}to{transform:translateX(0);opacity:1}}
-.leave-list{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:8px;margin-top:8px;font-size:11px}
-.gcal-panel h3{font-size:15px;font-weight:600;margin-bottom:14px;color:#93c5fd}.gcal-list{max-height:400px;overflow-y:auto}.gcal-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(15,23,42,.6);border-radius:6px;margin-bottom:6px;font-size:12px}.gcal-item:hover{background:rgba(59,130,246,.15)}.gcal-date{color:#60a5fa;font-weight:600}.gcal-add{color:var(--success);cursor:pointer;font-size:16px}.gcal-add:hover{transform:scale(1.2)}
-  @media(max-width:1200px){.main-wrap{grid-template-columns:1fr}}
+:root{
+  --ink:#0d1117;--paper:#f6f8fa;--card:#ffffff;--border:#d0d7de;
+  --muted:#656d76;--primary:#1f6feb;--primary-soft:#dbeafe;
+  --success:#1a7f37;--success-soft:#dcfce7;
+  --warn:#9a6700;--warn-soft:#fef9c3;
+  --danger:#cf222e;--danger-soft:#fee2e2;
+  --purple:#8250df;--purple-soft:#ede9fe;
+  --sun:#0550ae;--sun-soft:#dbeafe;
+  --hol:#1a7f37;--hol-soft:#dcfce7;
+  --sat:#6e40c9;--sat-soft:#ede9fe;
+  --radius:10px;--shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:290px 1fr;grid-template-rows:54px 1fr;height:100vh;overflow:hidden}
+.topbar{grid-column:1/-1;background:var(--ink);color:#fff;padding:0 20px;display:flex;align-items:center;gap:12px;height:54px;border-bottom:1px solid #30363d;flex-shrink:0}
+.topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.4px;color:#fff;flex:1}
+.topbar-title span{color:#58a6ff}
+.topbar-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sidebar{background:var(--card);border-right:1px solid var(--border);overflow-y:auto;height:100%}
+.main{overflow-y:auto;padding:20px;background:var(--paper);height:100%}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;line-height:1.4}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}.btn-primary:hover{background:#1558cc}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#126128}
+.btn-warn{background:var(--warn-soft);color:var(--warn);border-color:#d4a72c}.btn-warn:hover{background:#fef08a}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border-color:#fca5a5}.btn-danger:hover{background:#fecaca}
+.btn-ghost{background:transparent;color:#cdd9e5;border-color:#444c56}.btn-ghost:hover{background:#21262d;color:#fff}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{background:#6e36bc}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:5px}
+.btn-full{width:100%;justify-content:center}
+.btn-icon{padding:5px 7px}
+
+/* ── FORM ── */
+.field{margin-bottom:9px}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px}
+input[type=text],input[type=month],select,textarea{width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--ink);font-size:12px;font-family:'DM Sans',sans-serif;transition:border .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(31,111,235,.12)}
+textarea{resize:vertical;min-height:50px}
+.checkbox-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:12px;cursor:pointer}
+.checkbox-row input{width:14px;height:14px;accent-color:var(--primary);cursor:pointer}
+
+/* ── ACCORDION ── */
+.acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;padding:11px 16px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);transition:background .15s}
+.acc-btn:hover{background:var(--paper)}
+.acc-btn .chev{transition:transform .2s;font-size:9px;color:var(--muted)}
+.acc-btn.open .chev{transform:rotate(180deg)}
+.acc-body{display:none;padding:14px 16px;border-bottom:1px solid var(--border)}
+.acc-body.open{display:block}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.tag-y3{background:var(--purple-soft);color:var(--purple)}
+.tag-y2{background:var(--primary-soft);color:var(--primary)}
+.tag-y1{background:var(--success-soft);color:var(--success)}
+.tag-rm button{background:none;border:none;cursor:pointer;color:inherit;font-size:13px;line-height:1;padding:0;opacity:.6}.tag-rm button:hover{opacity:1}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px;min-height:20px}
+
+/* ── YEAR BLOCK ── */
+.year-block{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px}
+.yb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.add-row{display:flex;gap:4px}
+.add-row input{flex:1;font-size:11px;padding:5px 8px}
+
+/* ── LEAVE ── */
+.leave-pill{display:inline-flex;align-items:center;gap:2px;background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:2px 6px;font-size:10px;font-weight:600}
+.leave-pill button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:11px;padding:0;line-height:1}
+.leave-entry{padding:6px 0;border-bottom:1px solid var(--border);font-size:11px}
+.leave-entry:last-child{border:none}
+.leave-entry-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+
+/* ── STATS ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;box-shadow:var(--shadow)}
+.stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:3px}
+.stat-val{font-size:20px;font-weight:700;font-family:'Syne',sans-serif}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-bottom:14px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+.legend-item{display:flex;align-items:center;gap:4px}
+.ldot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.lbox{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+
+/* ── ROSTER TABLE ── */
+.roster-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.roster-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--ink);color:#fff}
+.roster-hdr h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
+.roster-meta{font-size:10px;color:#8b949e;margin-bottom:2px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#161b22;color:#8b949e;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-bottom:2px solid #30363d;white-space:nowrap}
+thead th:first-child{width:88px}thead th:nth-child(2){width:80px}
+
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:hover td{background:rgba(0,0,0,.02)}
+tbody tr.is-sun{background:var(--sun-soft)}
+tbody tr.is-hol{background:var(--hol-soft)}
+tbody tr.is-sat{background:var(--sat-soft)}
+
+td{padding:3px 6px;vertical-align:middle}
+.date-cell{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;padding-left:10px}
+tr.is-sun .date-cell{color:var(--sun);font-weight:600}
+tr.is-hol .date-cell{color:var(--hol);font-weight:600}
+tr.is-sat .date-cell{color:var(--sat);font-weight:600}
+.day-cell{font-size:11px;font-weight:600;color:var(--muted)}
+tr.is-sun .day-cell{color:var(--sun)}
+tr.is-hol .day-cell{color:var(--hol)}
+tr.is-sat .day-cell{color:var(--sat)}
+.day-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:700}
+.sun-badge{background:var(--sun-soft);color:var(--sun)}
+.hol-badge{background:var(--hol-soft);color:var(--hol)}
+.sat-badge{background:var(--sat-soft);color:var(--sat)}
+
+/* ── DUTY CELL ── */
+.duty-cell{position:relative;min-width:120px;max-width:180px}
+.duty-chip{display:flex;align-items:center;gap:4px;padding:4px 7px;border-radius:6px;border:1.5px solid transparent;cursor:pointer;transition:all .12s;min-height:28px;position:relative;user-select:none}
+.duty-chip:hover .dc-actions{opacity:1}
+
+/* states */
+.duty-chip.dc-empty{border:1.5px dashed #d0d7de;color:var(--muted);font-size:11px}
+.duty-chip.dc-empty:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.duty-chip.dc-auto{background:var(--success-soft);border-color:#86efac}
+.duty-chip.dc-manual{background:var(--warn-soft);border-color:#fcd34d}
+.duty-chip.dc-dms{background:var(--purple-soft);border-color:#c4b5fd}
+.duty-chip.dc-locked{background:#f1f5f9;border-color:var(--border);cursor:default}
+.duty-chip.dc-locked:hover{background:#f1f5f9;border-color:var(--border)}
+.duty-chip.dc-conflict{background:var(--danger-soft);border-color:#fca5a5;animation:blink .8s infinite}
+.duty-chip.dc-disabled{opacity:.4;cursor:not-allowed;border:1.5px dashed #d0d7de}
+
+/* swap states */
+.duty-chip.dc-swap-src{background:#fef9c3;border-color:#fde047;box-shadow:0 0 0 2px #fde047}
+.duty-chip.dc-swap-tgt{background:var(--success-soft);border-color:#4ade80;box-shadow:0 0 0 2px #4ade80;cursor:crosshair}
+.duty-chip.dc-swap-tgt:hover{background:#bbf7d0}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
+
+.dc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dc-name{font-size:11px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.dc-actions{display:flex;gap:1px;opacity:0;transition:opacity .15s;flex-shrink:0}
+.dc-actions button{background:none;border:none;padding:2px 3px;border-radius:3px;cursor:pointer;font-size:11px;line-height:1;color:var(--muted)}
+.dc-actions button:hover{background:rgba(0,0,0,.1);color:var(--ink)}
+
+/* inline editor popup */
+.duty-editor{position:absolute;top:calc(100% + 3px);left:0;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.16);padding:8px;min-width:190px}
+.duty-editor select{font-size:12px;padding:6px 8px;margin-bottom:7px;background:#fff}
+.editor-btns{display:flex;gap:5px}
+.editor-btns button{flex:1;font-size:11px;padding:5px 8px}
+
+/* ── SWAP BANNER ── */
+.swap-banner{position:fixed;top:62px;left:50%;transform:translateX(-50%);background:#92400e;color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;font-weight:600;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none;align-items:center;gap:10px}
+.swap-banner.active{display:flex}
+
+/* ── DIST ── */
+.dist-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px}
+.dist-row:last-child{border:none}
+.dpills{display:flex;gap:3px;flex-wrap:wrap}
+.dp{padding:1px 5px;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap}
+.dp-n{background:#e0e7ff;color:#3730a3}
+.dp-e{background:#fef9c3;color:#92400e}
+.dp-m{background:#fee2e2;color:#991b1b}
+.dp-t{background:#f0fdf4;color:#166534}
+
+/* ── ROTATE BOX ── */
+.rotate-box{background:var(--warn-soft);border:1px solid #fcd34d;border-radius:8px;padding:10px;font-size:11px;margin-top:8px;line-height:1.9}
+
+/* ── GCAL ── */
+.gcal-item{display:flex;justify-content:space-between;align-items:center;padding:5px 7px;border-radius:6px;font-size:11px;background:var(--paper);margin-bottom:3px;border:1px solid var(--border)}
+.gcal-date{font-family:'DM Mono',monospace;font-weight:600;color:var(--primary);font-size:11px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:18px;right:18px;padding:9px 15px;border-radius:8px;font-size:12px;font-weight:600;color:#fff;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:tin .2s ease;pointer-events:none;transition:opacity .3s}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .emoji{font-size:44px;margin-bottom:14px}
+.empty-state h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.empty-state p{font-size:13px}
+
+@media(max-width:860px){
+  .app{grid-template-columns:1fr;height:auto}
+  .sidebar{height:auto;max-height:none}
+  .main{height:auto;min-height:60vh}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#d0d7de;border-radius:10px}
 </style>
 </head>
 <body>
-<div class="main-wrap">
-  <div class="container">
-    <div class="header"><h1>Kayachikitsa Duty Roster</h1><p>Manual + DMS + Smart Auto-fill</p></div>
+<div class="app">
 
-    <div class="config">
-      <div class="grid">
-        <div class="field"><label>3rd Year</label><input id="y3" value="Dr Rubi, Dr Aman, Dr Ayush, Dr Dharnendra"></div>
-        <div class="field"><label>2nd Year</label><input id="y2" value="Dr Kirti, Dr Anjali, Dr Vaibhav, Dr Nisha"></div>
-        <div class="field"><label>1st Year</label><input id="y1" value="Dr Jyoti, Dr Kundan, Dr Deepa, Dr Komal"></div>
-        <div class="field"><label>Month</label><input type="month" id="month"></div>
-        <div class="field"><label>Holidays</label><input id="holidays" placeholder="5, 15, 26"></div>
-        <div class="field"><label>Leaves</label><textarea id="leaves" rows="1" placeholder="Dr Rubi: 5-8; Dr Aman: 10"></textarea></div>
-        <div class="field" style="grid-column:1/-1"><label>Hospital</label><textarea id="hospital" rows="2">PG Department of Kayachikitsa
-A & U TIBBIA COLLEGE AND HOSPITAL
-KAROL BAGH, NEW DELHI – 110005</textarea></div>
-      </div>
-
-      <div class="checkbox-group">
-        <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked><label>Morning Sun/Holiday only</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked><label>Night next day off</label></div>
-      </div>
-
-      <div id="leaveList"></div>
-
-      <div class="btn-group">
-        <button onclick="initTable()">1. Create Table</button>
-        <button class="warning" onclick="autoFill()">2. Auto-Fill</button>
-        <button id="dmsToggle" class="secondary" onclick="toggleDMS()">DMS Mode: OFF</button>
-        <button class="success" onclick="exportPDF()">3. Download PDF</button>
-        <button class="secondary" onclick="exportWord()">Word</button>
-        <button class="secondary" onclick="exportExcel()">Excel</button>
-        <button class="danger" onclick="clearDraft()">Clear</button>
-        <button class="secondary" id="loadBtn" style="display:none" onclick="loadDraft()">Load</button>
-      </div>
-    </div>
-
-    <div id="output"></div>
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-title">Kaya<span>chikitsa</span> Roster</div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost btn-sm" id="dmsToggle" onclick="toggleDMS()" title="DMS Mode marks duties in bold on export">DMS: OFF</button>
+    <button class="btn btn-ghost btn-sm" id="swapToggle" onclick="toggleSwap()" title="Swap two duty slots by clicking them">⇄ Swap Duties</button>
+    <span style="color:#444c56;font-size:14px">|</span>
+    <button class="btn btn-ghost btn-sm" onclick="exportPDF()">↓ PDF</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportWord()">↓ Word</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportExcel()">↓ Excel</button>
+    <span style="color:#444c56;font-size:14px">|</span>
+    <button class="btn btn-ghost btn-sm" id="loadBtn" style="display:none" onclick="loadDraft()">↩ Load Draft</button>
+    <button class="btn btn-danger btn-sm" onclick="clearDraft()">Reset</button>
   </div>
+</header>
 
-  <div class="gcal-panel">
-    <h3>📅 Google Calendar</h3>
-    <button class="success" style="width:100%;margin-bottom:12px" onclick="addAllHolidays()">Add All Holidays to GCal</button>
-    <div class="gcal-list" id="gcalList"></div>
-  </div>
+<!-- SWAP BANNER -->
+<div class="swap-banner" id="swapBanner">
+  <span id="swapMsg">Click a duty cell to pick source</span>
+  <button onclick="cancelSwap()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;font-weight:600">✕ Cancel</button>
 </div>
 
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <!-- SETTINGS -->
+  <button class="acc-btn open" onclick="toggleAcc(this)">⚙ Settings <span class="chev">▼</span></button>
+  <div class="acc-body open">
+    <div class="field"><label>Month</label><input type="month" id="month"></div>
+    <div class="field"><label>Custom Holidays (day numbers)</label><input id="holidays" placeholder="e.g. 5, 15, 26"></div>
+    <div class="field"><label>Hospital Header</label>
+      <textarea id="hospital">PG Department of Kayachikitsa
+A & U TIBBIA COLLEGE AND HOSPITAL
+KAROL BAGH, NEW DELHI – 110005</textarea>
+    </div>
+    <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked><label>Morning duties: Sun & Holidays only</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked><label>Night duty → next day off</label></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
+      <button class="btn btn-primary btn-sm btn-full" onclick="initTable()">📋 Create Table</button>
+      <button class="btn btn-warn btn-sm btn-full" onclick="autoFill()">⚡ Auto-Fill</button>
+    </div>
+  </div>
+
+  <!-- MEMBERS -->
+  <button class="acc-btn open" onclick="toggleAcc(this)">🎓 Members <span class="chev">▼</span></button>
+  <div class="acc-body open" id="yearMgmtUI"></div>
+  <div style="padding:10px 16px;border-bottom:1px solid var(--border)">
+    <button class="btn btn-warn btn-sm btn-full" onclick="showRotatePreview()">📅 Year-End Rotation</button>
+    <div id="rotatePreview"></div>
+  </div>
+
+  <!-- LEAVE -->
+  <button class="acc-btn" onclick="toggleAcc(this)">🏥 Leave Management <span class="chev">▼</span></button>
+  <div class="acc-body">
+    <div style="display:flex;gap:5px;margin-bottom:8px">
+      <select id="leaveDocSel" style="flex:2;font-size:11px;padding:5px 7px"></select>
+      <input type="text" id="leaveRange" placeholder="5-8 or 12,14" style="flex:1.5;font-size:11px;padding:5px 7px">
+      <button class="btn btn-danger btn-sm" onclick="addLeave()">Add</button>
+    </div>
+    <div id="leaveList"></div>
+    <textarea id="leaves" style="display:none"></textarea>
+  </div>
+
+  <!-- GCAL -->
+  <button class="acc-btn" onclick="toggleAcc(this)">📅 Google Calendar <span class="chev">▼</span></button>
+  <div class="acc-body">
+    <button class="btn btn-success btn-sm btn-full" style="margin-bottom:8px" onclick="addAllHolidays()">Add All to Google Calendar</button>
+    <div id="gcalList"><div style="color:var(--muted);font-size:11px">Create table first</div></div>
+  </div>
+
+  <!-- DISTRIBUTION -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="distAccBtn">📊 Distribution <span class="chev">▼</span></button>
+  <div class="acc-body" id="distAccBody">
+    <div id="distSummary"><div style="color:var(--muted);font-size:11px;text-align:center;padding:8px">Run auto-fill to see distribution</div></div>
+    
+  </div>
+
+</aside>
+
+<!-- MAIN -->
+<main class="main" id="mainArea">
+
+  <div class="stats-bar" id="statsBar" style="display:none">
+    <div class="stat-card"><div class="stat-label">Filled</div><div class="stat-val" id="statFilled" style="color:var(--success)">-</div></div>
+    <div class="stat-card"><div class="stat-label">Empty</div><div class="stat-val" id="statEmpty" style="color:var(--warn)">-</div></div>
+    <div class="stat-card"><div class="stat-label">Conflicts</div><div class="stat-val" id="statConflicts">-</div></div>
+    <div class="stat-card"><div class="stat-label">Locked</div><div class="stat-val" id="statLocked" style="color:var(--purple)">-</div></div>
+  </div>
+
+  <div class="legend" id="legend" style="display:none">
+    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Legend:</span>
+    <div class="legend-item"><div class="lbox" style="background:var(--success-soft);border:1.5px solid #86efac"></div>Auto</div>
+    <div class="legend-item"><div class="lbox" style="background:var(--warn-soft);border:1.5px solid #fcd34d"></div>Manual</div>
+    <div class="legend-item"><div class="lbox" style="background:var(--purple-soft);border:1.5px solid #c4b5fd"></div>DMS</div>
+    <div class="legend-item"><div class="lbox" style="background:#f1f5f9;border:1.5px solid var(--border)">🔒</div>Locked</div>
+    <div class="legend-item"><div class="lbox" style="background:var(--danger-soft);border:1.5px solid #fca5a5"></div>Conflict</div>
+    <span style="color:var(--border)">|</span>
+    <div class="legend-item"><div class="ldot" style="background:var(--purple)"></div>3rd yr</div>
+    <div class="legend-item"><div class="ldot" style="background:var(--primary)"></div>2nd yr</div>
+    <div class="legend-item"><div class="ldot" style="background:var(--success)"></div>1st yr</div>
+    <span style="color:var(--border)">|</span>
+    <div class="legend-item" style="color:var(--sun)">● Sun</div>
+    <div class="legend-item" style="color:var(--hol)">● Holiday</div>
+    <div class="legend-item" style="color:var(--sat)">● Saturday</div>
+  </div>
+
+  <div id="output">
+    <div class="empty-state">
+      <div class="emoji">📋</div>
+      <h2>No Roster Yet</h2>
+      <p>Add members in the sidebar, select a month,<br>then click <strong>Create Table</strong> to begin.</p>
+    </div>
+  </div>
+
+</main>
+</div><!-- .app -->
+
 <script>
-const jsPDF = window.jspdf?.jsPDF;
-let roster=null, students=[], leaveMap={}, dmsMode=false, y3=[], y2=[], y1=[];
-const KEY='kaya_v3';
-const INDIAN_HOLIDAYS={'2026-01-26':'Republic Day','2026-03-08':'Maha Shivratri','2026-03-14':'Holi','2026-04-03':'Good Friday','2026-04-14':'Ambedkar Jayanti','2026-05-01':'Labour Day','2026-08-15':'Independence Day','2026-10-02':'Gandhi Jayanti','2026-10-20':'Diwali','2026-12-25':'Christmas'};
+const jsPDF=window.jspdf?.jsPDF;
+let roster=null,students=[],leaveMap={},dmsMode=false;
+let y3=[],y2=[],y1=[];
+const KEY='kaya_v5';
+const INDIAN_HOLIDAYS={
+  '2026-01-26':'Republic Day','2026-03-08':'Maha Shivratri','2026-03-14':'Holi',
+  '2026-04-03':'Good Friday','2026-04-14':'Ambedkar Jayanti','2026-05-01':'Labour Day',
+  '2026-08-15':'Independence Day','2026-10-02':'Gandhi Jayanti','2026-10-20':'Diwali','2026-12-25':'Christmas',
+  '2025-01-26':'Republic Day','2025-03-14':'Holi','2025-04-18':'Good Friday',
+  '2025-04-14':'Ambedkar Jayanti','2025-05-01':'Labour Day','2025-08-15':'Independence Day',
+  '2025-10-02':'Gandhi Jayanti','2025-10-23':'Diwali','2025-12-25':'Christmas'
+};
 
-function getStudents(){ y3=document.getElementById('y3').value.split(',').map(s=>s.trim()).filter(Boolean); y2=document.getElementById('y2').value.split(',').map(s=>s.trim()).filter(Boolean); y1=document.getElementById('y1').value.split(',').map(s=>s.trim()).filter(Boolean); students=[...y3,...y2,...y1]; }
-function parseLeaves(){ leaveMap={}; const str=document.getElementById('leaves').value.trim(); if(!str){document.getElementById('leaveList').innerHTML='';return;} let html='<div class="leave-list"><strong>Leaves:</strong> '; str.split(';').forEach(e=>{ const [n,d]=e.split(':').map(s=>s?.trim()); if(!n||!d) return; const days=[]; d.split(',').forEach(p=>{ p=p.trim(); if(p.includes('-')){ const [a,b]=p.split('-').map(Number); for(let i=a;i<=b;i++) days.push(i);} else days.push(Number(p));}); leaveMap[n]=days; html+=`${n} (${days.join(',')}) `;}); html+='</div>'; document.getElementById('leaveList').innerHTML=html; }
-function isLeave(doc,day){ return leaveMap[doc]?.includes(day); }
-function getYear(doc){ return y3.includes(doc)?3:y2.includes(doc)?2:1; }
+// ── SWAP ──────────────────────────────────────────────────────────────
+let swapMode=false,swapSrc=null;
+function toggleSwap(){
+  swapMode=!swapMode;swapSrc=null;
+  const btn=document.getElementById('swapToggle');
+  const banner=document.getElementById('swapBanner');
+  if(swapMode){btn.textContent='✕ Cancel Swap';btn.className='btn btn-warn btn-sm';banner.className='swap-banner active';document.getElementById('swapMsg').textContent='Click the duty you want to move';}
+  else{btn.textContent='⇄ Swap Duties';btn.className='btn btn-ghost btn-sm';banner.className='swap-banner';}
+  render();
+}
+function cancelSwap(){swapMode=false;swapSrc=null;toggleSwap();}
 
+// ── ACCORDION ─────────────────────────────────────────────────────────
+function toggleAcc(btn){
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+// ── MEMBERS ───────────────────────────────────────────────────────────
+let memberData={
+  y3:['Dr Rubi','Dr Aman','Dr Ayush','Dr Dharnendra'],
+  y2:['Dr Kirti','Dr Anjali','Dr Vaibhav','Dr Nisha'],
+  y1:['Dr Jyoti','Dr Kundan','Dr Deepa','Dr Komal']
+};
+function renderYearMgmt(){
+  const cfg=[
+    {key:'y3',label:'3rd Year',cls:'tag-y3'},
+    {key:'y2',label:'2nd Year',cls:'tag-y2'},
+    {key:'y1',label:'1st Year',cls:'tag-y1'}
+  ];
+  let html='';
+  cfg.forEach(({key,label,cls})=>{
+    const members=memberData[key];
+    html+=`<div class="year-block">
+      <div class="yb-head"><span class="tag ${cls}">${label} · ${members.length}</span></div>
+      <div class="tags-wrap">
+        ${members.map(m=>`<span class="tag ${cls} tag-rm">${m}<button onclick="removeMember('${key}','${esc(m)}')">×</button></span>`).join('')}
+        ${!members.length?`<span style="color:var(--muted);font-size:11px;font-style:italic">None — add below</span>`:''}
+      </div>
+      <div class="add-row">
+        <input type="text" id="add_${key}" placeholder="Dr Name" onkeydown="if(event.key==='Enter')addMember('${key}')">
+        <button class="btn btn-ghost btn-sm" onclick="addMember('${key}')">+ Add</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('yearMgmtUI').innerHTML=html;
+  populateLeaveDocSel();
+}
+function esc(s){return s.replace(/'/g,"\\'");}
+function addMember(yr){
+  const inp=document.getElementById('add_'+yr),name=inp.value.trim();
+  if(!name)return toast('Enter a name');
+  if([...memberData.y3,...memberData.y2,...memberData.y1].includes(name))return toast(name+' already exists','warn');
+  memberData[yr].push(name);inp.value='';renderYearMgmt();saveMemberData();
+}
+function removeMember(yr,name){
+  if(!confirm('Remove '+name+'?'))return;
+  memberData[yr]=memberData[yr].filter(m=>m!==name);
+  delete leaveMap[name];renderYearMgmt();renderLeaveUI();saveMemberData();
+}
+function showRotatePreview(){
+  document.getElementById('rotatePreview').innerHTML=`<div class="rotate-box">
+    <strong>Rotation Preview</strong><br>
+    <span style="color:var(--danger)">✕ Graduate (removed):</span> ${memberData.y3.join(', ')||'None'}<br>
+    <span style="color:var(--purple)">↑ 2nd → 3rd Year:</span> ${memberData.y2.join(', ')||'None'}<br>
+    <span style="color:var(--primary)">↑ 1st → 2nd Year:</span> ${memberData.y1.join(', ')||'None'}<br>
+    <span style="color:var(--success)">★ New 1st Year:</span> Add after rotating<br><br>
+    <button class="btn btn-warn btn-sm" onclick="doRotation()">✅ Confirm Rotation</button>
+  </div>`;
+}
+function doRotation(){
+  if(!confirm('Confirm year rotation? 3rd year will be removed.'))return;
+  memberData.y3=[...memberData.y2];memberData.y2=[...memberData.y1];memberData.y1=[];
+  document.getElementById('rotatePreview').innerHTML=`<div class="rotate-box" style="background:var(--success-soft);border-color:#86efac;color:var(--success)">✅ Done! Now add new 1st year members above.</div>`;
+  renderYearMgmt();saveMemberData();toast('Year rotation complete','success');
+}
+function saveMemberData(){localStorage.setItem(KEY+'_members',JSON.stringify(memberData));}
+function loadMemberData(){const d=localStorage.getItem(KEY+'_members');if(d)memberData=JSON.parse(d);}
+
+// ── LEAVE ─────────────────────────────────────────────────────────────
+function populateLeaveDocSel(){
+  const sel=document.getElementById('leaveDocSel');if(!sel)return;
+  const all=[...memberData.y3,...memberData.y2,...memberData.y1];
+  sel.innerHTML=all.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+function addLeave(){
+  const doc=document.getElementById('leaveDocSel').value;
+  const range=document.getElementById('leaveRange').value.trim();
+  if(!doc||!range)return toast('Select doctor and enter dates');
+  const days=parseRange(range);if(!days.length)return toast('Invalid date format');
+  if(!leaveMap[doc])leaveMap[doc]=[];
+  days.forEach(d=>{if(!leaveMap[doc].includes(d))leaveMap[doc].push(d);});
+  leaveMap[doc].sort((a,b)=>a-b);
+  document.getElementById('leaveRange').value='';
+  renderLeaveUI();syncLeavesInput();save();
+}
+function removeLeave(doc,day){
+  if(!leaveMap[doc])return;
+  leaveMap[doc]=leaveMap[doc].filter(d=>d!==day);
+  if(!leaveMap[doc].length)delete leaveMap[doc];
+  renderLeaveUI();syncLeavesInput();save();
+}
+function clearDocLeaves(doc){delete leaveMap[doc];renderLeaveUI();syncLeavesInput();save();}
+function parseRange(str){
+  const days=[];
+  str.split(',').forEach(p=>{p=p.trim();
+    if(p.includes('-')){const[a,b]=p.split('-').map(Number);if(!isNaN(a)&&!isNaN(b))for(let i=a;i<=b;i++)days.push(i);}
+    else{const n=Number(p);if(!isNaN(n)&&n>0)days.push(n);}
+  });return days;
+}
+function renderLeaveUI(){
+  const el=document.getElementById('leaveList');if(!el)return;
+  const docs=Object.keys(leaveMap);
+  if(!docs.length){el.innerHTML='<div style="color:var(--muted);font-size:11px">No leaves recorded.</div>';return;}
+  let html='';
+  docs.forEach(doc=>{
+    const days=leaveMap[doc];
+    let conflict='';
+    if(roster){
+      const conf=roster.data.filter(r=>days.includes(r.day)&&(r.m===doc||r.e===doc||r.n===doc));
+      if(conf.length)conflict=`<div style="color:var(--danger);font-size:10px;margin-top:3px">⚠ Duty conflict: ${conf.map(r=>r.date).join(', ')}</div>`;
+    }
+    html+=`<div class="leave-entry">
+      <div class="leave-entry-head">
+        <strong style="font-size:12px">${doc}</strong>
+        <button class="btn btn-danger btn-sm" onclick="clearDocLeaves('${esc(doc)}')">Clear all</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">
+        ${days.map(d=>`<span class="leave-pill">${d}<button onclick="removeLeave('${esc(doc)}',${d})">×</button></span>`).join('')}
+      </div>${conflict}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+function syncLeavesInput(){
+  document.getElementById('leaves').value=Object.entries(leaveMap).map(([n,d])=>`${n}:${d.join(',')}`).join(';');
+}
+function parseLeaves(){
+  leaveMap={};
+  const str=document.getElementById('leaves').value.trim();if(!str)return;
+  str.split(';').forEach(e=>{const[n,d]=e.split(':').map(s=>s?.trim());if(!n||!d)return;leaveMap[n]=parseRange(d);});
+}
+function isLeave(doc,day){return !!(leaveMap[doc]?.includes(day));}
+
+// ── STUDENTS ──────────────────────────────────────────────────────────
+function getStudents(){y3=memberData.y3;y2=memberData.y2;y1=memberData.y1;students=[...y3,...y2,...y1];}
+function dotClass(doc){return y3.includes(doc)?'var(--purple)':y2.includes(doc)?'var(--primary)':'var(--success)';}
+
+// ── DUTY QUALITY ──────────────────────────────────────────────────────
+function dutyQuality(r,sh){
+  if(sh==='m')return -1;
+  if(sh==='e'){if(r.isSat||r.isSun||r.isHol)return -1;return 0;}
+  if(sh==='n'){if(r.isSat||r.nextDayHol)return -1;return 1;}
+  return 0;
+}
+
+// ── INIT TABLE ────────────────────────────────────────────────────────
 function initTable(){
-  const mv=document.getElementById('month').value; if(!mv) return toast('Pick month');
-  getStudents(); parseLeaves(); const [yr,mo]=mv.split('-').map(Number); const dim=new Date(yr,mo,0).getDate();
+  const mv=document.getElementById('month').value;if(!mv)return toast('Pick a month');
+  getStudents();parseLeaves();renderLeaveUI();
+  if(!students.length)return toast('Add members first','warn');
+  const[yr,mo]=mv.split('-').map(Number);const dim=new Date(yr,mo,0).getDate();
   const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean);
-  // merge built-in Indian holidays (hidden)
-  Object.entries(INDIAN_HOLIDAYS).forEach(([d,name])=>{const [y,m,day]=d.split('-').map(Number); if(y===yr&&m===mo&&!hols.includes(day)) hols.push(day);});
+  Object.entries(INDIAN_HOLIDAYS).forEach(([d])=>{
+    const[y,m,day]=d.split('-').map(Number);
+    if(y===yr&&m===mo&&!hols.includes(day))hols.push(day);
+  });
   roster={year:yr,month:mo,hospital:document.getElementById('hospital').value,data:[]};
-  for(let d=1;d<=dim;d++){ const dt=new Date(yr,mo-1,d); roster.data.push({date:`${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${yr}`,dayName:dt.toLocaleDateString('en-US',{weekday:'long'}),day:d,isSun:dt.getDay()===0,isSat:dt.getDay()===6,isHol:hols.includes(d),m:'',e:'',n:'',mM:false,eM:false,nM:false,mD:false,eD:false,nD:false});}
-  save(); render(); updateGCalList();
+  for(let d=1;d<=dim;d++){
+    const dt=new Date(yr,mo-1,d);
+    const nxt=new Date(yr,mo-1,d+1);
+    const nextDayHol=hols.includes(d+1)||nxt.getDay()===0;
+    roster.data.push({
+      date:`${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${yr}`,
+      dayName:dt.toLocaleDateString('en-US',{weekday:'long'}),
+      day:d,isSun:dt.getDay()===0,isSat:dt.getDay()===6,isHol:hols.includes(d),nextDayHol,
+      m:'',e:'',n:'',
+      mM:false,eM:false,nM:false,   // manual flag
+      mD:false,eD:false,nD:false,   // DMS flag
+      mL:false,eL:false,nL:false    // locked flag
+    });
+  }
+  save();render();updateGCalList();toast('Table created ✓','success');
 }
 
+// ── RENDER ────────────────────────────────────────────────────────────
 function render(){
-  if(!roster) return; const {data,year,month,hospital}=roster; const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'}); const morningOnly=document.getElementById('morningSundayHoliday').checked;
-  const filled=data.reduce((a,r)=>a+(r.m?1:0)+(r.e?1:0)+(r.n?1:0),0); const conflicts=data.filter(r=>{const arr=[r.m,r.e,r.n].filter(Boolean);return new Set(arr).size!==arr.length}).length;
+  if(!roster)return;
+  const{data,year,month,hospital}=roster;
+  const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const filled=data.reduce((a,r)=>a+(r.m?1:0)+(r.e?1:0)+(r.n?1:0),0);
+  const total=data.length*3;
+  const conflicts=data.filter(r=>{const a=[r.m,r.e,r.n].filter(Boolean);return new Set(a).size!==a.length;}).length;
+  const locked=data.reduce((a,r)=>a+(r.mL?1:0)+(r.eL?1:0)+(r.nL?1:0),0);
+  const morningOnly=document.getElementById('morningSundayHoliday').checked;
 
-  let html=`<div class="table-wrap"><div style="text-align:center;margin-bottom:16px;line-height:1.5">${hospital.split('\n').map(l=>`<div style="font-weight:600">${l}</div>`).join('')}<div style="color:#94a3b8;font-size:12px;margin-top:4px">Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${monthName}</div></div>
-  <div class="stats"><div class="stat-card"><h4>Filled</h4><div class="value">${filled}</div></div><div class="stat-card"><h4>Remaining</h4><div class="value">${data.length*3-filled}</div></div><div class="stat-card"><h4>Conflicts</h4><div class="value" style="color:${conflicts?'#ef4444':'#10b981'}">${conflicts}</div></div></div>
-  <div class="legend"><div class="legend-item"><div class="legend-box" style="background:rgba(245,158,11,.15);border:1px solid #f59e0b"></div>Manual</div><div class="legend-item"><div class="legend-box" style="background:rgba(139,92,246,.22);border:1px solid #8b5cf6"></div>DMS</div><div class="legend-item"><div class="legend-box" style="background:rgba(16,185,129,.14);border:1px solid #10b981"></div>Auto</div><div class="legend-item"><div class="legend-box" style="background:rgba(30,64,175,.4);border:1px solid #1e40af"></div>Holiday/Sunday</div></div>
-  <table><thead><tr><th>Date</th><th>Day</th><th>Morning</th><th>Evening</th><th>Night</th></tr></thead><tbody>`;
+  document.getElementById('statsBar').style.display='grid';
+  document.getElementById('legend').style.display='flex';
+  document.getElementById('statFilled').textContent=filled;
+  document.getElementById('statEmpty').textContent=total-filled;
+  const cc=document.getElementById('statConflicts');
+  cc.textContent=conflicts;cc.style.color=conflicts?'var(--danger)':'var(--success)';
+  document.getElementById('statLocked').textContent=locked;
 
-  data.forEach((r,i)=>{ const cls=r.isSun?'sunday':r.isHol?'holiday':''; const mDis=morningOnly&&!r.isSun&&!r.isHol; html+=`<tr class="${cls}"><td>${r.date}</td><td>${r.dayName}</td><td>${sel(i,'m',r.m,r.mM,r.mD,mDis,r.day)}</td><td>${sel(i,'e',r.e,r.eM,r.eD,false,r.day)}</td><td>${sel(i,'n',r.n,r.nM,r.nD,false,r.day)}</td></tr>`; });
-  html+=`</tbody></table></div>`; document.getElementById('output').innerHTML=html;
+  let html=`<div class="roster-wrap">
+    <div class="roster-hdr">
+      <div>
+        <div class="roster-meta">${hospital.split('\n').slice(0,2).join(' · ')}</div>
+        <h2>Duty Roster · ${monthName}</h2>
+      </div>
+      <div style="font-size:11px;color:#8b949e;text-align:right">
+        ${filled} / ${total} slots filled<br>
+        <span style="font-size:18px;font-family:'Syne',sans-serif;font-weight:700;color:${filled===total?'#3fb950':'#e3b341'}">${Math.round(filled/total*100)}%</span>
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Day</th>
+        <th>🌅 Morning</th><th>🌆 Evening</th><th>🌙 Night</th>
+      </tr></thead>
+      <tbody>`;
+
+  data.forEach((r,i)=>{
+    const rc=r.isSun?'is-sun':r.isHol?'is-hol':r.isSat?'is-sat':'';
+    const badge=r.isSun?'<span class="day-badge sun-badge">Sun</span>':r.isHol?'<span class="day-badge hol-badge">Hol</span>':r.isSat?'<span class="day-badge sat-badge">Sat</span>':'';
+    const mDis=morningOnly&&!r.isSun&&!r.isHol;
+    html+=`<tr class="${rc}">
+      <td class="date-cell">${r.date}</td>
+      <td class="day-cell">${r.dayName.substring(0,3)}${badge}</td>
+      <td class="duty-cell" onclick="event.stopPropagation()">${chip(i,'m',r,mDis)}</td>
+      <td class="duty-cell" onclick="event.stopPropagation()">${chip(i,'e',r,false)}</td>
+      <td class="duty-cell" onclick="event.stopPropagation()">${chip(i,'n',r,false)}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  document.getElementById('output').innerHTML=html;
+  renderLeaveUI();
 }
 
-function sel(idx,sh,val,isMan,isDMS,dis,day){ 
-  const r=roster.data[idx]; const conflict=[r.m,r.e,r.n].filter(v=>v===val&&val).length>1; let cls=''; 
-  if(val){ cls=isDMS?'dms':isMan?'manual':'filled'; } if(conflict) cls+=' conflict'; 
-  let opts='<option value="">-</option>'; 
-  students.forEach(s=>{ const leave=isLeave(s,day); const thirdNoMorning=sh==='m'&&y3.includes(s); opts+=`<option value="${s}" ${s===val?'selected':''} ${leave||thirdNoMorning?'disabled':''}>${s}${leave?' (Leave)':''}${thirdNoMorning?' (No AM)':''}</option>`; }); 
-  return `${conflict?'<span class="conflict-badge">⚠</span>':''}<select class="duty-select ${cls}" ${dis?'disabled':''} onchange="setDuty(${idx},'${sh}',this.value)">${opts}</select>`; 
+function chip(idx,sh,r,disabled){
+  const val=r[sh],locked=r[sh+'L'],isMan=r[sh+'M'],isDMS=r[sh+'D'];
+  const takenArr=[r.m,r.e,r.n].filter(Boolean);
+  const conflict=val&&takenArr.filter(v=>v===val).length>1;
+
+  if(disabled)return `<div class="duty-chip dc-disabled" title="Mornings only on Sun/Holidays"><span style="font-size:10px;color:var(--muted)">—</span></div>`;
+
+  let cls='duty-chip ';
+  if(conflict)cls+='dc-conflict';
+  else if(locked)cls+='dc-locked';
+  else if(swapMode&&swapSrc&&swapSrc.idx===idx&&swapSrc.sh===sh)cls+='dc-swap-src';
+  else if(swapMode&&swapSrc)cls+='dc-swap-tgt';
+  else if(!val)cls+='dc-empty';
+  else if(isDMS)cls+='dc-dms';
+  else if(isMan)cls+='dc-manual';
+  else cls+='dc-auto';
+
+  const dot=val?`<div class="dc-dot" style="background:${dotClass(val)}"></div>`:'';
+  const lockIco=locked?'🔒 ':'';
+  const name=val?`${lockIco}${val}`:'<span style="font-size:10px">＋ Assign</span>';
+
+  const actionBtns=val&&!swapMode?`<div class="dc-actions">
+    <button onclick="event.stopPropagation();lockSlot(${idx},'${sh}')" title="${locked?'Unlock':'Lock'}">${locked?'🔓':'🔒'}</button>
+    <button onclick="event.stopPropagation();clearSlot(${idx},'${sh}')" title="Clear">✕</button>
+  </div>`:'';
+
+  return `<div class="${cls}" id="dc_${idx}_${sh}" onclick="cellClick(${idx},'${sh}')">
+    ${dot}<span class="dc-name">${name}</span>${actionBtns}
+  </div>`;
 }
 
-function setDuty(i,sh,val){ const r=roster.data[i]; if(val&&isLeave(val,r.day)){ toast(`${val} is on leave on ${r.date}`,'warning'); return render(); } r[sh]=val; r[sh+'M']=!!val; r[sh+'D']=dmsMode&&!!val; if(val&&[r.m,r.e,r.n].filter(v=>v===val).length>1) toast(`⚠️ ${val} double-booked ${r.date}`); save(); render(); }
+// ── CELL CLICK ────────────────────────────────────────────────────────
+function cellClick(idx,sh){
+  if(!roster)return;
+  const r=roster.data[idx];
 
-function toggleDMS(){ dmsMode=!dmsMode; const b=document.getElementById('dmsToggle'); b.textContent=`DMS Mode: ${dmsMode?'ON':'OFF'}`; b.classList.toggle('dms-active',dmsMode); }
+  // ── SWAP MODE ──
+  if(swapMode){
+    if(!swapSrc){
+      // pick source — can be empty too
+      swapSrc={idx,sh};
+      const srcName=r[sh]||'empty slot';
+      document.getElementById('swapMsg').textContent=`"${srcName}" → now click the target slot`;
+      render();return;
+    }
+    if(swapSrc.idx===idx&&swapSrc.sh===sh){swapSrc=null;document.getElementById('swapMsg').textContent='Click the duty you want to move';render();return;}
+    // execute swap
+    const rA=roster.data[swapSrc.idx],rB=roster.data[idx];
+    const sA=swapSrc.sh,sB=sh;
+    const tmp={v:rA[sA],M:rA[sA+'M'],D:rA[sA+'D'],L:rA[sA+'L']};
+    rA[sA]=rB[sB];rA[sA+'M']=rB[sB+'M'];rA[sA+'D']=rB[sB+'D'];rA[sA+'L']=rB[sB+'L'];
+    rB[sB]=tmp.v;rB[sB+'M']=tmp.M;rB[sB+'D']=tmp.D;rB[sB+'L']=tmp.L;
+    // mark as manual (intentional change)
+    if(rA[sA]){rA[sA+'M']=true;rA[sA+'D']=false;}
+    if(rB[sB]){rB[sB+'M']=true;rB[sB+'D']=false;}
+    swapSrc=null;
+    document.getElementById('swapMsg').textContent='Click the duty you want to move';
+    // conflict check
+    const conf=roster.data.filter(r2=>{const a=[r2.m,r2.e,r2.n].filter(Boolean);return new Set(a).size!==a.length;});
+    if(conf.length)toast('⚠ Conflict on '+conf.map(c=>c.date).join(', '),'warn');
+    else toast('Duties swapped ✓','success');
+    save();render();return;
+  }
 
-function autoFill(){
-  if(!roster) return toast('Create table first'); parseLeaves(); const {data}=roster; const nightOff=document.getElementById('nightOffRule').checked;
-  
-  // keep manual/DMS entries, clear previous auto fills for rebalance
-  data.forEach(r=>{ if(!r.mM){ r.m=''; r.mD=false; } if(!r.eM){ r.e=''; r.eD=false; } if(!r.nM){ r.n=''; r.nD=false; } });
-  
-  const cnt={}; students.forEach(s=>cnt[s]={total:0,good:0,bad:0});
-  const dutyQuality=(r,sh,idx)=>{ const nxt=data[idx+1]; const preHol=nxt?.isHol; if(sh==='n'){ if(r.isSat||preHol) return -1; if(r.isSun||r.isHol) return 0; return 1;} if(sh==='e'){ if(r.isSat||r.isSun||r.isHol) return -1; return 0;} if(sh==='m') return -1; return 0; };
-  data.forEach((r,i)=>{ [['m',r.m],['e',r.e],['n',r.n]].forEach(([sh,doc])=>{ if(!doc) return; cnt[doc].total++; const q=dutyQuality(r,sh,i); if(q>0) cnt[doc].good++; else if(q<0) cnt[doc].bad++; }); });
+  // ── LOCKED ──
+  if(r[sh+'L']){toast('Slot is locked — click 🔓 to unlock','warn');return;}
 
-  const weight=s=> y3.includes(s)?1.3 : y2.includes(s)?1.1 : 1.0;
-  const seniorBonus=(s,q)=> q>0 ? (y3.includes(s)?0.4:y2.includes(s)?0.2:0) : q<0 ? (y1.includes(s)?0.3:y2.includes(s)?0.15:0) : 0;
+  // ── OPEN EDITOR ──
+  closeAllEditors();
+  const morningOnly=document.getElementById('morningSundayHoliday').checked;
+  if(morningOnly&&sh==='m'&&!r.isSun&&!r.isHol)return;
 
-  // Morning assignments - Sundays & holidays (respect manual locks)
-  const suns=data.filter(r=>r.isSun&&!r.m);
-  const hols=data.filter(r=>r.isHol&&!r.isSun&&!r.m);
-  let p1=[...y1], p2=[...y2];
-  suns.forEach((r,idx)=>{ const pool = idx < y1.length ? p1 : p2; for(let k=0;k<pool.length*2;k++){ const s=pool[0]; if(!isLeave(s,r.day)&&(!nightOff||!data[r.day-2]?.n||data[r.day-2].n!==s)&&s!==r.e&&s!==r.n){ r.m=s; r.mM=false; cnt[s].total++; cnt[s].bad++; pool.push(pool.shift()); break;} pool.push(pool.shift()); } });
-  hols.forEach(r=>{ for(let k=0;k<p2.length*2;k++){ const s=p2[0]; if(!isLeave(s,r.day)&&(!nightOff||!data[r.day-2]?.n||data[r.day-2].n!==s)&&s!==r.e&&s!==r.n){ r.m=s; r.mM=false; cnt[s].total++; cnt[s].bad++; p2.push(p2.shift()); break;} p2.push(p2.shift()); } });
+  const cellEl=document.getElementById('dc_'+idx+'_'+sh);
+  if(!cellEl)return;
 
-  const pick=(r,idx,sh)=>{ const q=dutyQuality(r,sh,idx); return students.filter(s=>!isLeave(s,r.day)&&s!==r.m&&s!==r.e&&s!==r.n&&!(nightOff&&idx>0&&data[idx-1].n===s)).sort((a,b)=>{ const sa=cnt[a].total/weight(a)+cnt[a].bad*0.6-cnt[a].good*0.3 - seniorBonus(a,q); const sb=cnt[b].total/weight(b)+cnt[b].bad*0.6-cnt[b].good*0.3 - seniorBonus(b,q); return sa-sb; })[0]; };
-
-  data.forEach((r,idx)=>{
-    if(!r.n){ const c=pick(r,idx,'n'); if(c){ r.n=c; r.nM=false; r.nD=false; cnt[c].total++; const q=dutyQuality(r,'n',idx); if(q>0) cnt[c].good++; else if(q<0) cnt[c].bad++; } }
-    if(!r.e){ const c=pick(r,idx,'e'); if(c){ r.e=c; r.eM=false; r.eD=false; cnt[c].total++; const q=dutyQuality(r,'e',idx); if(q>0) cnt[c].good++; else if(q<0) cnt[c].bad++; } }
+  const takenToday=[];
+  if(sh!=='m'&&r.m) takenToday.push(r.m);
+  if(sh!=='e'&&r.e) takenToday.push(r.e);
+  if(sh!=='n'&&r.n) takenToday.push(r.n);
+  let opts='<option value="">— Clear slot —</option>';
+  students.forEach(s=>{
+    const onLeave=isLeave(s,r.day);
+    const noMorn=sh==='m'&&y3.includes(s);
+    const onDuty=takenToday.includes(s);
+    const dis=onLeave||noMorn; // only truly block leave and 3rd-yr mornings
+    let suffix='';
+    if(onLeave)suffix=' 🏥 On Leave';
+    else if(noMorn)suffix=' (No AM)';
+    else if(onDuty)suffix=' ⚡ Double duty';
+    opts+=`<option value="${s}" ${s===r[sh]?'selected':''} ${dis?'disabled':''}>${s}${suffix}</option>`;
   });
 
-  save(); render(); toast('Auto-fill rebalanced (manual locks kept)','success');
+  const ed=document.createElement('div');
+  ed.className='duty-editor';ed.id='activeEditor';
+  ed.innerHTML=`<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:5px">${r.date} · ${sh==='m'?'Morning':sh==='e'?'Evening':'Night'}</div>
+    <select id="edSel">${opts}</select>
+    <div class="editor-btns">
+      <button class="btn btn-primary btn-sm" onclick="applyEditor(${idx},'${sh}')">✓ Confirm</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeAllEditors()">✕</button>
+    </div>`;
+  // position editor floating over cell, attached to body so re-renders don't destroy it
+  const rect=cellEl.getBoundingClientRect();
+  ed.style.position='fixed';
+  ed.style.top=(rect.bottom+4)+'px';
+  ed.style.left=rect.left+'px';
+  ed.style.zIndex='9999';
+  document.body.appendChild(ed);
+  // keep it on screen if near bottom
+  requestAnimationFrame(()=>{
+    const er=ed.getBoundingClientRect();
+    if(er.bottom>window.innerHeight-10) ed.style.top=(rect.top-er.height-4)+'px';
+    if(er.right>window.innerWidth-10) ed.style.left=(window.innerWidth-er.width-10)+'px';
+  });
+  setTimeout(()=>document.getElementById('edSel')?.focus(),50);
 }
 
+function applyEditor(idx,sh){
+  const val=document.getElementById('edSel')?.value??'';
+  closeAllEditors();
+  const r=roster.data[idx];
+  if(val&&isLeave(val,r.day)){toast(val+' is on leave on '+r.date,'warn');return;}
+  if(val&&sh==='m'&&y3.includes(val)){toast('3rd year are not assigned morning duties','warn');return;}
+  // same-day duplicate: warn but allow (some people take double duties)
+  const takenToday2=[];
+  if(sh!=='m'&&r.m) takenToday2.push(r.m);
+  if(sh!=='e'&&r.e) takenToday2.push(r.e);
+  if(sh!=='n'&&r.n) takenToday2.push(r.n);
+  if(val&&takenToday2.includes(val)) toast('⚠ '+val+' already has a duty on '+r.date+' — assigned anyway','warn');
+  r[sh]=val;r[sh+'M']=!!val;r[sh+'D']=dmsMode&&!!val;r[sh+'L']=false;
+  save();renderCell(idx,sh);updateStats();
+}
+
+function closeAllEditors(){document.getElementById('activeEditor')?.remove();}
+function lockSlot(idx,sh){roster.data[idx][sh+'L']=!roster.data[idx][sh+'L'];save();renderCell(idx,sh);}
+function clearSlot(idx,sh){
+  if(roster.data[idx][sh+'L']){toast('Unlock first','warn');return;}
+  roster.data[idx][sh]='';roster.data[idx][sh+'M']=false;roster.data[idx][sh+'D']=false;
+  save();renderCell(idx,sh);updateStats();
+}
+function toggleDMS(){
+  dmsMode=!dmsMode;
+  const b=document.getElementById('dmsToggle');
+  b.textContent=`DMS: ${dmsMode?'ON':'OFF'}`;
+  b.className=dmsMode?'btn btn-purple btn-sm':'btn btn-ghost btn-sm';
+  toast('DMS mode '+(dmsMode?'ON — new assignments marked bold in exports':'OFF'),'success');
+}
+
+// ── AUTO-FILL ─────────────────────────────────────────────────────────
+function autoFill(){
+  if(!roster)return toast('Create table first');
+  parseLeaves();getStudents();
+  if(!students.length)return toast('No members added','warn');
+  const{data}=roster;
+  const nightOff=document.getElementById('nightOffRule').checked;
+
+  // clear auto-fills only (keep manual, DMS, locked)
+  data.forEach(r=>{
+    if(!r.mM&&!r.mL){r.m='';r.mD=false;}
+    if(!r.eM&&!r.eL){r.e='';r.eD=false;}
+    if(!r.nM&&!r.nL){r.n='';r.nD=false;}
+  });
+
+  const cnt={};
+  students.forEach(s=>cnt[s]={total:0,good:0,bad:0,neutral:0,mornings:0,sunMornings:0,holMornings:0,evenings:0,nights:0,satNights:0,preHolNights:0,badNights:0,sunNights:0});
+
+  // seed from already-placed duties
+  data.forEach(r=>{
+    ['m','e','n'].forEach(sh=>{
+      const doc=r[sh];if(!doc)return;
+      cnt[doc].total++;
+      const q=dutyQuality(r,sh);
+      if(q>0)cnt[doc].good++;else if(q<0)cnt[doc].bad++;else cnt[doc].neutral++;
+      if(sh==='m'){cnt[doc].mornings++;if(r.isSun)cnt[doc].sunMornings++;if(r.isHol)cnt[doc].holMornings++;}
+      if(sh==='e')cnt[doc].evenings++;
+      if(sh==='n'){cnt[doc].nights++;if(r.isSat){cnt[doc].satNights++;cnt[doc].badNights++;}else if(r.nextDayHol){cnt[doc].preHolNights++;cnt[doc].badNights++;}if(r.isSun)cnt[doc].sunNights++;}
+    });
+  });
+
+  const morningOnly=document.getElementById('morningSundayHoliday').checked;
+
+  if(morningOnly){
+    const sunRows=data.filter(r=>r.isSun&&!r.m&&!r.mL).sort((a,b)=>a.day-b.day);
+    const holRows=data.filter(r=>r.isHol&&!r.isSun&&!r.m&&!r.mL).sort((a,b)=>a.day-b.day);
+    const y1Pool=[...y1],y2Pool=[...y2];
+
+    const pickFromPool=(row,pool)=>{
+      const taken=[row.e,row.n].filter(Boolean);
+      const prev=data[row.day-2];
+      const ok=s=>!isLeave(s,row.day)&&!taken.includes(s)&&!(nightOff&&prev&&prev.n===s);
+      const avail=pool.filter(ok);
+      if(!avail.length)return null;
+      // pick whoever has fewest sunday mornings; tiebreak by total mornings
+      const minV=Math.min(...avail.map(s=>cnt[s].sunMornings));
+      return avail.filter(s=>cnt[s].sunMornings===minV).sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
+    };
+
+    // Sunday mornings:
+    // Rule: each 1st year gets exactly 1 sunday morning before anyone repeats.
+    // If sundays > y1.length, remaining go to 2nd year (one each before repeating).
+    // Nobody gets a 2nd sunday morning until everyone in their pool has had 1st.
+    sunRows.forEach(r=>{
+      // try 1st year first — but only if they haven't used their 1 sunday morning yet
+      const y1Available=y1Pool.filter(s=>{
+        const taken=[r.e,r.n].filter(Boolean);
+        const prev=data[r.day-2];
+        return !isLeave(s,r.day)&&!taken.includes(s)&&!(nightOff&&prev&&prev.n===s)&&cnt[s].sunMornings===0;
+      });
+      let pick=null;
+      if(y1Available.length){
+        // among fresh 1st years, pick fewest total mornings
+        pick=y1Available.sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
+      } else {
+        // all 1st years had their 1 sunday morning — move to 2nd year
+        // among 2nd year, pick whoever has fewest sunday mornings (strictly fair)
+        pick=pickFromPool(r,y2Pool);
+        // if 2nd year exhausted too, fall back to 1st year again (2nd round)
+        if(!pick) pick=pickFromPool(r,y1Pool);
+      }
+      if(pick){
+        r.m=pick;cnt[pick].total++;cnt[pick].bad++;cnt[pick].mornings++;cnt[pick].sunMornings++;
+      }
+    });
+
+    // Holiday mornings: 2nd year priority, then 1st year, strict fewest-first
+    const pickMorning=(row,primary,fallback)=>{
+      const taken=[row.e,row.n].filter(Boolean);
+      const prev=data[row.day-2];
+      const ok=s=>!isLeave(s,row.day)&&!taken.includes(s)&&!(nightOff&&prev&&prev.n===s);
+      const tryPool=pool=>{
+        const avail=pool.filter(ok);if(!avail.length)return false;
+        const minV=Math.min(...avail.map(s=>cnt[s].holMornings));
+        const pick=avail.filter(s=>cnt[s].holMornings===minV).sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
+        row.m=pick;cnt[pick].total++;cnt[pick].bad++;cnt[pick].mornings++;cnt[pick].holMornings++;
+        return true;
+      };
+      if(!tryPool(primary))tryPool(fallback);
+    };
+    holRows.forEach(r=>pickMorning(r,y2Pool,y1Pool));
+  }
+
+  const yearBias=(s,q)=>{
+    if(q>0){if(y3.includes(s))return -0.25;if(y2.includes(s))return -0.10;return 0;}
+    if(q<0){if(y1.includes(s))return -0.20;if(y2.includes(s))return -0.08;return 0;}
+    return 0;
+  };
+
+  const pick=(r,sh)=>{
+    const q=dutyQuality(r,sh);
+    const prev=data[r.day-2];
+    const takenToday=[r.m,r.e,r.n].filter(Boolean);
+    const cands=students.filter(s=>{
+      if(isLeave(s,r.day))return false;
+      if(takenToday.includes(s))return false;
+      if(sh==='m'&&y3.includes(s))return false;
+      if(nightOff&&prev&&prev.n===s)return false;
+      return true;
+    });
+    if(!cands.length)return null;
+    cands.sort((a,b)=>{
+      const sA=sh==='n'?cnt[a].nights:sh==='e'?cnt[a].evenings:cnt[a].mornings;
+      const sB=sh==='n'?cnt[b].nights:sh==='e'?cnt[b].evenings:cnt[b].mornings;
+      const isBad=sh==='n'&&q<0;
+      const bA=isBad?cnt[a].badNights*3:0,bB=isBad?cnt[b].badNights*3:0;
+      // Sunday nights: separate spread — no one gets a 2nd before everyone has 1st
+      const isSunNight=sh==='n'&&r.isSun;
+      const snA=isSunNight?cnt[a].sunNights*3.5:0,snB=isSunNight?cnt[b].sunNights*3.5:0;
+      const qA=cnt[a].bad*0.4-cnt[a].good*0.25,qB=cnt[b].bad*0.4-cnt[b].good*0.25;
+      return (sA*2.5+bA+snA+qA+yearBias(a,q))-(sB*2.5+bB+snB+qB+yearBias(b,q));
+    });
+    return cands[0];
+  };
+
+  data.forEach(r=>{
+    if(!r.n&&!r.nL){
+      const c=pick(r,'n');
+      if(c){
+        r.n=c;r.nM=false;r.nD=false;
+        cnt[c].total++;cnt[c].nights++;
+        if(r.isSat){cnt[c].satNights++;cnt[c].badNights++;}
+        else if(r.nextDayHol){cnt[c].preHolNights++;cnt[c].badNights++;}
+        if(r.isSun)cnt[c].sunNights++;
+        const q=dutyQuality(r,'n');
+        if(q>0)cnt[c].good++;else if(q<0)cnt[c].bad++;else cnt[c].neutral++;
+      }
+    }
+    if(!r.e&&!r.eL){
+      // Sunday: assign evening to same person as night (both bad, one person takes the full day)
+      // But only if night is already set and that person isn't on leave and not locked out
+      let c=null;
+      if(r.isSun&&r.n&&!isLeave(r.n,r.day)){
+        c=r.n;
+      } else {
+        c=pick(r,'e');
+      }
+      if(c){
+        r.e=c;r.eM=false;r.eD=false;
+        cnt[c].total++;cnt[c].evenings++;
+        const q=dutyQuality(r,'e');
+        if(q>0)cnt[c].good++;else if(q<0)cnt[c].bad++;else cnt[c].neutral++;
+      }
+    }
+  });
+
+  save();render();renderDist(cnt);toast('Auto-fill complete ✓','success');
+}
+
+function renderDist(cnt){
+  const groups=[{l:'3rd Year',m:y3,c:'tag-y3'},{l:'2nd Year',m:y2,c:'tag-y2'},{l:'1st Year',m:y1,c:'tag-y1'}];
+  let html='';
+  groups.forEach(({l,m,c})=>{
+    if(!m.length)return;
+    html+=`<div style="margin:10px 0 5px"><span class="tag ${c}" style="font-size:10px">${l}</span></div>`;
+    m.forEach(s=>{
+      const d=cnt[s]||{total:0,nights:0,evenings:0,mornings:0,badNights:0};
+      html+=`<div class="dist-row">
+        <span style="font-weight:600;font-size:11px">${s}</span>
+        <div class="dpills">
+          <span class="dp dp-n" title="Nights">🌙${d.nights}${d.badNights?`<span style="color:#c026d3;font-size:9px">(${d.badNights}✗)</span>`:''}</span>
+          <span class="dp dp-e" title="Evenings">🌆${d.evenings}</span>
+          <span class="dp dp-m" title="Mornings">🌅${d.mornings||0}</span>
+          <span class="dp dp-t" title="Total">Σ${d.total}</span>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('distSummary').innerHTML=html;
+  // auto-open distribution accordion
+  const distBtn=document.getElementById('distAccBtn');
+  const distBody=document.getElementById('distAccBody');
+  if(distBtn&&!distBtn.classList.contains('open')){distBtn.classList.add('open');distBody.classList.add('open');}
+}
+
+// ── GCAL ──────────────────────────────────────────────────────────────
 function updateGCalList(){
-  if(!roster) return; const {year,month}=roster; const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean);
-  let html=''; hols.forEach(d=>{ const dt=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`; html+=`<div class="gcal-item"><div><div class="gcal-date">${d}/${month}</div><div style="color:#94a3b8">Custom Holiday</div></div><div class="gcal-add" onclick="addToGCal('${dt}','Holiday')">+</div></div>`; });
-  Object.entries(INDIAN_HOLIDAYS).forEach(([date,name])=>{ const [y,m,d]=date.split('-').map(Number); if(y===year&&m===month){ html+=`<div class="gcal-item"><div><div class="gcal-date">${d}/${m}</div><div style="color:#94a3b8">${name}</div></div><div class="gcal-add" onclick="addToGCal('${date}','${name}')">+</div></div>`; }});
-  document.getElementById('gcalList').innerHTML=html||'<div style="color:#94a3b8;text-align:center;padding:20px">No holidays this month</div>';
+  if(!roster)return;
+  const{year,month}=roster;
+  const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean);
+  let html='';
+  hols.forEach(d=>{
+    const dt=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    html+=`<div class="gcal-item"><div><div class="gcal-date">${d}/${month}</div><div style="color:var(--muted);font-size:10px">Custom Holiday</div></div><button class="btn btn-success btn-sm" onclick="addToGCal('${dt}','Holiday')">+ GCal</button></div>`;
+  });
+  Object.entries(INDIAN_HOLIDAYS).forEach(([date,name])=>{
+    const[y,m,d]=date.split('-').map(Number);
+    if(y===year&&m===month)html+=`<div class="gcal-item"><div><div class="gcal-date">${d}/${m}</div><div style="color:var(--muted);font-size:10px">${name}</div></div><button class="btn btn-success btn-sm" onclick="addToGCal('${date}','${name}')">+ GCal</button></div>`;
+  });
+  document.getElementById('gcalList').innerHTML=html||'<div style="color:var(--muted);font-size:11px">No holidays this month</div>';
 }
+function addToGCal(date,title){window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${date.replace(/-/g,'')}/${date.replace(/-/g,'')}`,'_blank');}
+function addAllHolidays(){if(!roster)return;const{year,month}=roster;const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean);hols.forEach((d,i)=>{const dt=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;setTimeout(()=>addToGCal(dt,'Holiday'),i*220);});toast('Opening GCal tabs...','success');}
 
-function addToGCal(date,title){ const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${date.replace(/-/g,'')}/${date.replace(/-/g,'')}&details=${encodeURIComponent('Kayachikitsa Department Holiday')}`; window.open(url,'_blank'); }
-function addAllHolidays(){ if(!roster) return; const {year,month}=roster; const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean); hols.forEach((d,i)=>{ const dt=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`; setTimeout(()=>addToGCal(dt,'Holiday'),i*200); }); toast('Opening Google Calendar tabs...','success'); }
-
+// ── EXPORTS ───────────────────────────────────────────────────────────
 function exportPDF(){
-  if(!roster||!jsPDF) return toast('Create first or PDF lib missing'); const {data,year,month,hospital}=roster; const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const doc=new jsPDF({format:'a4'}); doc.setFont('times','normal'); let y=14; doc.setFontSize(12); hospital.split('\n').forEach(l=>{doc.text(l.trim(),105,y,{align:'center'});y+=5.5}); doc.setFontSize(11); doc.text(`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${monthName}`,105,y,{align:'center'}); y+=8;
-  const body=data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']);
-  doc.autoTable({startY:y,head:[['Date','Day','Morning','Evening','Night']],body,styles:{font:'times',fontSize:8.2,cellPadding:1.4,lineColor:[180,200,220],lineWidth:0.1},headStyles:{fillColor:[0,176,190],textColor:255,fontStyle:'bold',halign:'center'},columnStyles:{0:{halign:'center',cellWidth:20},1:{halign:'center',cellWidth:24},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'}},margin:{left:12,right:12,bottom:15},pageBreak:'avoid',didParseCell:d=>{ if(d.section==='body'){ const r=data[d.row.index]; const isHol=r.isHol; const isSun=d.row.raw[1]==='Sunday'; if(isHol||isSun){ d.cell.styles.fillColor=[197,231,239]; }
-    if(d.column.index===2 && r.mD) d.cell.styles.fontStyle='bold';
-    if(d.column.index===3 && r.eD) d.cell.styles.fontStyle='bold';
-    if(d.column.index===4 && r.nD) d.cell.styles.fontStyle='bold';
-  } }});
-  let fy=doc.lastAutoTable.finalY+6; doc.setFontSize(9.5); doc.text('The next day of night duty will be considered as off.',14,fy); doc.text('The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.',14,fy+5); doc.text('Copy to:',14,fy+12); doc.text('All PG Students',14,fy+17); doc.setFont('times','bold'); doc.text('Dr Sujata Yadav',150,fy+24); doc.setFont('times','normal'); doc.text('HOD, Department of Kayachikitsa',150,fy+29); doc.save(`Kayachikitsa_${monthName.replace(' ','_')}.pdf`);
+  if(!roster||!jsPDF)return toast('Create table first');
+  const{data,year,month,hospital}=roster;
+  const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const doc=new jsPDF({format:'a4'});doc.setFont('times','normal');let y=14;
+  doc.setFontSize(12);hospital.split('\n').forEach(l=>{doc.text(l.trim(),105,y,{align:'center'});y+=5.5;});
+  doc.setFontSize(11);doc.text(`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${mn}`,105,y,{align:'center'});y+=8;
+  doc.autoTable({startY:y,head:[['Date','Day','Morning','Evening','Night']],body:data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']),
+    styles:{font:'times',fontSize:8.2,cellPadding:1.4,lineColor:[180,200,220],lineWidth:0.1},
+    headStyles:{fillColor:[0,176,190],textColor:255,fontStyle:'bold',halign:'center'},
+    columnStyles:{0:{halign:'center',cellWidth:20},1:{halign:'center',cellWidth:24},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'}},
+    margin:{left:12,right:12,bottom:15},pageBreak:'avoid',
+    didParseCell:d=>{if(d.section==='body'){const r=data[d.row.index];if(r.isHol||r.dayName==='Sunday')d.cell.styles.fillColor=[197,231,239];if(d.column.index===2&&r.mD)d.cell.styles.fontStyle='bold';if(d.column.index===3&&r.eD)d.cell.styles.fontStyle='bold';if(d.column.index===4&&r.nD)d.cell.styles.fontStyle='bold';}}
+  });
+  let fy=doc.lastAutoTable.finalY+6;doc.setFontSize(9.5);
+  doc.text('The next day of night duty will be considered as off.',14,fy);
+  doc.text('The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.',14,fy+5);
+  doc.text('Copy to:',14,fy+12);doc.text('All PG Students',14,fy+17);
+  doc.setFont('times','bold');doc.text('Dr Sujata Yadav',150,fy+24);
+  doc.setFont('times','normal');doc.text('HOD, Department of Kayachikitsa',150,fy+29);
+  doc.save(`Kayachikitsa_${mn.replace(' ','_')}.pdf`);
 }
-
 function exportWord(){
-  if(!roster) return toast('Create first');
-  const {data,year,month,hospital}=roster; const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="UTF-8"><title>Roster</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt 36pt 36pt 36pt;}div.WordSection1{page:WordSection1;}body{font-family:"Times New Roman",serif;font-size:10pt}h3{margin:1pt 0;text-align:center;font-size:12pt}h4{margin:2pt 0;text-align:center;font-size:11pt;font-weight:normal}table{border-collapse:collapse;width:100%;table-layout:fixed}col.c1{width:9%}col.c2{width:12%}col.c3{width:26.3%}col.c4{width:26.3%}col.c5{width:26.4%}th{background:#00b0be;color:#fff;padding:2pt 1pt;border:0.5pt solid #444;font-size:9.5pt;text-align:center}td{border:0.5pt solid #777;padding:1.5pt 1pt;text-align:center;font-size:9pt;line-height:1.05;vertical-align:middle}tr{page-break-inside:avoid}.hol{background:#eef7fa}.dms{font-weight:bold}p{margin:3pt 0;font-size:9.5pt}</style></head><body><div class="WordSection1">`;
+  if(!roster)return toast('Create first');
+  const{data,year,month,hospital}=roster;
+  const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  let html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="UTF-8"><title>Roster</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt 36pt 36pt 36pt;}div.WordSection1{page:WordSection1;}body{font-family:"Times New Roman",serif;font-size:10pt}h3{margin:1pt 0;text-align:center;font-size:12pt}h4{margin:2pt 0;text-align:center;font-size:11pt;font-weight:normal}table{border-collapse:collapse;width:100%;table-layout:fixed}col.c1{width:9%}col.c2{width:12%}col.c3{width:26.3%}col.c4{width:26.3%}col.c5{width:26.4%}th{background:#00b0be;color:#fff;padding:2pt 1pt;border:0.5pt solid #444;font-size:9.5pt;text-align:center}td{border:0.5pt solid #777;padding:1.5pt 1pt;text-align:center;font-size:9pt;line-height:1.05;vertical-align:middle}tr{page-break-inside:avoid}.hol{background:#eef7fa}.dms{font-weight:bold}p{margin:3pt 0;font-size:9.5pt}</style></head><body><div class="WordSection1">`;
   hospital.split('\n').forEach(l=>html+=`<h3>${l}</h3>`);
-  html+=`<h4>Duty roster for PG students of Dept. of KAYACHIKITSA for ${monthName}</h4><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><tr><th>Date</th><th>Day</th><th>Morning</th><th>Evening</th><th>Night</th></tr>`;
-  data.forEach(r=>{const c=r.isHol||r.dayName==='Sunday'?' class="hol"':'';const m=r.mD?`<span class="dms">${r.m||'-'}</span>`:r.m||'-';const e=r.eD?`<span class="dms">${r.e||'-'}</span>`:r.e||'-';const n=r.nD?`<span class="dms">${r.n||'-'}</span>`:r.n||'-';html+=`<tr${c}><td>${r.date}</td><td>${r.dayName.substring(0,3)}</td><td>${m}</td><td>${e}</td><td>${n}</td></tr>`});
+  html+=`<h4>Duty roster for PG students of Dept. of KAYACHIKITSA for ${mn}</h4><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><tr><th>Date</th><th>Day</th><th>Morning</th><th>Evening</th><th>Night</th></tr>`;
+  data.forEach(r=>{const c=r.isHol||r.dayName==='Sunday'?' class="hol"':'';html+=`<tr${c}><td>${r.date}</td><td>${r.dayName.substring(0,3)}</td><td>${r.mD?`<span class="dms">${r.m||'-'}</span>`:r.m||'-'}</td><td>${r.eD?`<span class="dms">${r.e||'-'}</span>`:r.e||'-'}</td><td>${r.nD?`<span class="dms">${r.n||'-'}</span>`:r.n||'-'}</td></tr>`;});
   html+=`</table><p>The next day of night duty will be considered as off.<br>The duty will not be interchanged without prior permission of HOD.</p><p>Copy to: All PG Students</p><p style="text-align:right;margin-top:12pt"><b>Dr Sujata Yadav</b><br>HOD, Kayachikitsa</p></div></body></html>`;
-  const blob=new Blob(['\ufeff',html],{type:'application/msword'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Kayachikitsa_${monthName.replace(' ','_')}.doc`;a.click();toast('Word exported – portrait, 1 page','success');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff',html],{type:'application/msword'}));a.download=`Kayachikitsa_${mn.replace(' ','_')}.doc`;a.click();
+  toast('Word exported','success');
+}
+function exportExcel(){
+  if(!roster)return;
+  const{data,year,month,hospital}=roster;
+  const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const ws=XLSX.utils.aoa_to_sheet([...hospital.split('\n').map(l=>[l]),[`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${mn}`],[],['Date','Day','Morning','Evening','Night'],...data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']),[], ['The next day of night duty will be considered as off.'],['The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.'],[], ['Copy to:'],['All PG Students'],[],['','','','Dr Sujata Yadav'],['','','','HOD, Department of Kayachikitsa']]);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Roster');
+  XLSX.writeFile(wb,`Kayachikitsa_${mn.replace(' ','_')}.xlsx`);
 }
 
-function exportExcel(){ if(!roster) return; const {data,year,month,hospital}=roster; const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'}); const ws=XLSX.utils.aoa_to_sheet([...hospital.split('\n').map(l=>[l]),[`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${mn}`],[],['Date','Day','Morning','Evening','Night'],...data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']),[],['The next day of night duty will be considered as off.'],['The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.'],[],['Copy to:'],['All PG Students'],[],['','','','Dr Sujata Yadav'],['','','','HOD, Department of Kayachikitsa']]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Roster'); XLSX.writeFile(wb,`Kayachikitsa_${mn.replace(' ','_')}.xlsx`); }
+// ── SAVE / LOAD ───────────────────────────────────────────────────────
+function save(){
+  if(!roster)return;
+  localStorage.setItem(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,morning:document.getElementById('morningSundayHoliday').checked,nightOff:document.getElementById('nightOffRule').checked}}));
+  document.getElementById('loadBtn').style.display='inline-flex';
+}
+function loadDraft(){
+  const d=localStorage.getItem(KEY);if(!d)return;
+  const p=JSON.parse(d);
+  if(p.settings){document.getElementById('holidays').value=p.settings.holidays||'';document.getElementById('leaves').value=p.settings.leaves||'';document.getElementById('hospital').value=p.settings.hospital||'';document.getElementById('morningSundayHoliday').checked=p.settings.morning!==false;document.getElementById('nightOffRule').checked=p.settings.nightOff!==false;}
+  if(p.leaveMap)leaveMap=p.leaveMap;else parseLeaves();
+  roster=p.roster;getStudents();renderLeaveUI();render();updateGCalList();
+  toast('Draft loaded ✓','success');
+}
+function clearDraft(){if(confirm('Clear all roster data?')){localStorage.removeItem(KEY);location.reload();}}
 
-function save(){ if(!roster) return; localStorage.setItem(KEY,JSON.stringify({roster,settings:{y3:document.getElementById('y3').value,y2:document.getElementById('y2').value,y1:document.getElementById('y1').value,holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,morning:document.getElementById('morningSundayHoliday').checked,nightOff:document.getElementById('nightOffRule').checked}})); document.getElementById('loadBtn').style.display='inline-block'; }
-function loadDraft(){ const d=localStorage.getItem(KEY); if(!d) return; const p=JSON.parse(d); Object.entries(p.settings).forEach(([k,v])=>{const el={y3:'y3',y2:'y2',y1:'y1',holidays:'holidays',leaves:'leaves',hospital:'hospital'}[k]; if(el) document.getElementById(el).value=v; if(k==='morning') document.getElementById('morningSundayHoliday').checked=v; if(k==='nightOff') document.getElementById('nightOffRule').checked=v;}); roster=p.roster; getStudents(); parseLeaves(); render(); updateGCalList(); toast('Draft loaded','success'); }
-function clearDraft(){ if(confirm('Clear all?')){localStorage.removeItem(KEY);location.reload();} }
-function toast(msg,type='danger'){ const t=document.createElement('div'); t.className='toast'; t.style.background=type==='success'?'var(--success)':type==='warning'?'var(--warning)':'var(--danger)'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2500); }
+// ── TOAST ─────────────────────────────────────────────────────────────
+function toast(msg,type='danger'){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div');t.className='toast';
+  t.style.background=type==='success'?'#1a7f37':type==='warn'?'#9a6700':'#cf222e';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';},2500);setTimeout(()=>t.remove(),2800);
+}
 
-window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('month').value=new Date().toISOString().slice(0,7); if(localStorage.getItem(KEY)) document.getElementById('loadBtn').style.display='inline-block'; });
+// ── PARTIAL RE-RENDER HELPERS ────────────────────────────────────────
+// Update a single duty chip without redrawing the whole table
+function renderCell(idx,sh){
+  const r=roster.data[idx];
+  const morningOnly=document.getElementById('morningSundayHoliday').checked;
+  const disabled=morningOnly&&sh==='m'&&!r.isSun&&!r.isHol;
+  const cellEl=document.getElementById('dc_'+idx+'_'+sh);
+  if(cellEl) cellEl.outerHTML=chip(idx,sh,r,disabled);
+}
+
+// Recompute and update stats bar numbers only
+function updateStats(){
+  if(!roster)return;
+  const data=roster.data;
+  const filled=data.reduce((a,r)=>a+(r.m?1:0)+(r.e?1:0)+(r.n?1:0),0);
+  const total=data.length*3;
+  const conflicts=data.filter(r=>{const a=[r.m,r.e,r.n].filter(Boolean);return new Set(a).size!==a.length;}).length;
+  const locked=data.reduce((a,r)=>a+(r.mL?1:0)+(r.eL?1:0)+(r.nL?1:0),0);
+  document.getElementById('statFilled').textContent=filled;
+  document.getElementById('statEmpty').textContent=total-filled;
+  const cc=document.getElementById('statConflicts');
+  cc.textContent=conflicts;cc.style.color=conflicts?'var(--danger)':'var(--success)';
+  document.getElementById('statLocked').textContent=locked;
+}
+
+// close editor when clicking outside
+document.addEventListener('mousedown',e=>{
+  const ed=document.getElementById('activeEditor');
+  if(ed&&!ed.contains(e.target)&&!e.target.closest('.duty-chip'))closeAllEditors();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  loadMemberData();renderYearMgmt();
+  document.getElementById('month').value=new Date().toISOString().slice(0,7);
+  if(localStorage.getItem(KEY)){
+    document.getElementById('loadBtn').style.display='inline-flex';
+    try{const p=JSON.parse(localStorage.getItem(KEY));if(p.leaveMap)leaveMap=p.leaveMap;}catch(e){}
+    renderLeaveUI();
+  }
+});
 </script>
 </body>
-</htmlfunction exportWord(){
+</html>
