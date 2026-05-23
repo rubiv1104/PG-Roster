@@ -198,6 +198,28 @@ tr.is-sat .day-cell{color:var(--sat)}
   .main{height:auto;min-height:60vh}
   .stats-bar{grid-template-columns:repeat(2,1fr)}
 }
+/* ── HISTORY ── */
+.hist-entry{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:7px;font-size:11px}
+.hist-entry-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.hist-month{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--ink)}
+.hist-badge{font-size:9px;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:8px;font-weight:700}
+.hist-debt{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.hist-debt-pill{background:#fef9c3;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:600}
+
+/* ── SNAPSHOTS ── */
+.snap-entry{background:#fff;border:1px solid var(--border);border-radius:7px;padding:8px 10px;margin-bottom:6px;font-size:11px}
+.snap-entry-head{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.snap-label{font-weight:700;color:var(--ink);font-size:11px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snap-time{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap}
+.snap-actions{display:flex;gap:3px;flex-shrink:0}
+
+/* ── SNAP MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);min-width:320px;max-width:420px;width:100%;overflow:hidden}
+.modal-head{background:var(--ink);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.modal-head-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
+.modal-body{padding:18px}
+.modal-foot{padding:10px 18px 14px;display:flex;gap:8px;justify-content:flex-end}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#d0d7de;border-radius:10px}
 </style>
 </head>
@@ -216,6 +238,8 @@ tr.is-sat .day-cell{color:var(--sat)}
     <button class="btn btn-ghost btn-sm" onclick="exportExcel()">↓ Excel</button>
     <span style="color:#444c56;font-size:14px">|</span>
     <button class="btn btn-ghost btn-sm" id="loadBtn" style="display:none" onclick="loadDraft()">↩ Load Draft</button>
+    <button class="btn btn-success btn-sm" id="saveHistBtn" style="display:none" onclick="saveToHistory()" title="Archive this roster for future balancing">💾 Save to History</button>
+    <button class="btn btn-purple btn-sm" id="snapBtn" style="display:none" onclick="openSnapModal()" title="Save a named checkpoint you can return to anytime">📌 Save Snapshot</button>
     <button class="btn btn-danger btn-sm" onclick="clearDraft()">Reset</button>
     <button class="btn btn-ghost btn-sm" onclick="showHelp()" style="border-color:#58a6ff;color:#58a6ff">❓ Help</button>
   </div>
@@ -359,6 +383,10 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
     </div>
     <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked><label>Morning duties: Sun & Holidays only</label></div>
     <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked><label>Night duty → next day off</label></div>
+    <div class="field" style="margin-top:6px">
+      <label>Double Duty Allowed (names, comma separated)</label>
+      <input id="doubleDutyList" placeholder="e.g. Dr Rubi, Dr Kundan" title="These people can get both evening+night on the same day during auto-fill">
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
       <button class="btn btn-primary btn-sm btn-full" onclick="initTable()">📋 Create Table</button>
       <button class="btn btn-warn btn-sm btn-full" onclick="autoFill()">⚡ Auto-Fill</button>
@@ -397,6 +425,21 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
   <div class="acc-body" id="distAccBody">
     <div id="distSummary"><div style="color:var(--muted);font-size:11px;text-align:center;padding:8px">Run auto-fill to see distribution</div></div>
     
+  </div>
+
+  <!-- HISTORY -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="histAccBtn">📜 Roster History <span class="chev">▼</span></button>
+  <div class="acc-body" id="histAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5">Saved rosters are used by auto-fill to balance bad duties across months.</div>
+    <div id="histList"><div style="color:var(--muted);font-size:11px;font-style:italic">No history yet — finish a roster and click 💾 Save to History.</div></div>
+  </div>
+
+  <!-- SNAPSHOTS -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="snapAccBtn">📌 Snapshots <span class="chev">▼</span></button>
+  <div class="acc-body" id="snapAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5">Save named checkpoints of the current roster. Restore any version anytime — great for before/after comparisons.</div>
+    <button class="btn btn-purple btn-sm btn-full" style="margin-bottom:10px" onclick="openSnapModal()">📌 Save Snapshot Now</button>
+    <div id="snapList"><div style="color:var(--muted);font-size:11px;font-style:italic">No snapshots yet.</div></div>
   </div>
 
 </aside>
@@ -438,6 +481,27 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
 
 </main>
 </div><!-- .app -->
+
+<!-- SNAPSHOT MODAL -->
+<div id="snapModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeSnapModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-head-title">📌 Save Snapshot</div>
+      <button onclick="closeSnapModal()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Snapshot Label</label>
+        <input type="text" id="snapNameInput" placeholder="e.g. After auto-fill, Before manual edits, Final version…" onkeydown="if(event.key==='Enter')confirmSnap()">
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">The full roster state is saved. You can restore it anytime from the Snapshots panel.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeSnapModal()">Cancel</button>
+      <button class="btn btn-purple btn-sm" onclick="confirmSnap()">💾 Save Snapshot</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const jsPDF=window.jspdf?.jsPDF;
@@ -855,7 +919,7 @@ function autoFill(){
   });
 
   const cnt={};
-  students.forEach(s=>cnt[s]={total:0,good:0,bad:0,neutral:0,mornings:0,sunMornings:0,holMornings:0,evenings:0,nights:0,satNights:0,preHolNights:0,badNights:0,sunNights:0});
+  students.forEach(s=>cnt[s]={total:0,good:0,bad:0,neutral:0,mornings:0,sunMornings:0,holMornings:0,evenings:0,satEvenings:0,sunEvenings:0,nights:0,satNights:0,preHolNights:0,badNights:0,sunNights:0});
 
   // seed from already-placed duties
   data.forEach(r=>{
@@ -865,7 +929,7 @@ function autoFill(){
       const q=dutyQuality(r,sh);
       if(q>0)cnt[doc].good++;else if(q<0)cnt[doc].bad++;else cnt[doc].neutral++;
       if(sh==='m'){cnt[doc].mornings++;if(r.isSun)cnt[doc].sunMornings++;if(r.isHol)cnt[doc].holMornings++;}
-      if(sh==='e')cnt[doc].evenings++;
+      if(sh==='e'){cnt[doc].evenings++;if(r.isSat)cnt[doc].satEvenings++;if(r.isSun)cnt[doc].sunEvenings++;}
       if(sh==='n'){cnt[doc].nights++;if(r.isSat){cnt[doc].satNights++;cnt[doc].badNights++;}else if(r.nextDayHol){cnt[doc].preHolNights++;cnt[doc].badNights++;}if(r.isSun)cnt[doc].sunNights++;}
     });
   });
@@ -932,11 +996,58 @@ function autoFill(){
     holRows.forEach(r=>pickMorning(r,y2Pool,y1Pool));
   }
 
-  const yearBias=(s,q)=>{
-    if(q>0){if(y3.includes(s))return -0.25;if(y2.includes(s))return -0.10;return 0;}
-    if(q<0){if(y1.includes(s))return -0.20;if(y2.includes(s))return -0.08;return 0;}
+  const yearBias=(s,q,isSatEve=false)=>{
+    // Saturday evening: 3rd year protected (prefer 1st then 2nd), unless good-duty rebalance kicks in
+    if(isSatEve){
+      if(y3.includes(s))return 4.5;  // avoid 3rd year for sat evenings — reduced by satEveRebalance if they have too many good duties
+      if(y2.includes(s))return 1.5;  // slight preference for 1st year over 2nd
+      return 0;                       // 1st year takes sat evenings first
+    }
+    // Bad duties (bad nights): 3rd year strongly protected, 2nd year moderately, 1st year takes most
+    // Good duties (regular nights): 3rd year slightly preferred
+    if(q<0){
+      if(y3.includes(s))return 6.0;   // very strongly avoid giving 3rd year bad nights
+      if(y2.includes(s))return 2.5;   // moderately avoid 2nd year
+      return 0;                        // 1st year gets bad nights first
+    }
+    if(q>0){
+      if(y3.includes(s))return -1.5;  // 3rd year preferred for good/regular nights
+      if(y2.includes(s))return -0.6;
+      return 0;
+    }
     return 0;
   };
+
+  // How many good duties ahead of their batch average is this person?
+  const goodDutyExcess=(s)=>{
+    const myBatch=y3.includes(s)?y3:y2.includes(s)?y2:y1;
+    const myGood=cnt[s].good;
+    const batchAvg=myBatch.reduce((a,m)=>a+cnt[m].good,0)/myBatch.length;
+    return myGood-batchAvg; // positive = ahead of batch on good duties
+  };
+
+  // Saturday evening rebalance: if a 3rd year person is significantly ahead on good duties,
+  // reduce their Saturday evening protection proportionally — they've had enough good duties, time to share the bad ones
+  const satEveRebalance=(s,isSatEve)=>{
+    if(!isSatEve||!y3.includes(s))return 0;
+    const excess=goodDutyExcess(s);
+    if(excess<=1.5)return 0;          // comfortably ahead threshold — must be clearly ahead, not just by 1
+    return -(excess*2.5);             // stronger pull — the more good duties they have, the more eligible they become
+  };
+
+  // Within-batch rotation: track how many bad nights each person has THIS month
+  // so bad nights rotate among batch-mates, not all going to one person
+  const batchBadNightBias=(s)=>{
+    // penalise anyone who already has a bad night this month relative to their batch
+    const myBatch=y3.includes(s)?y3:y2.includes(s)?y2:y1;
+    const myBad=cnt[s].badNights;
+    const batchMin=Math.min(...myBatch.map(m=>cnt[m].badNights));
+    const aboveMin=myBad-batchMin; // how many more bad nights than the luckiest in your batch
+    return aboveMin*4.5; // strong penalty — rotate within batch before giving anyone a second bad night
+  };
+
+  // Load historical bad-night debt to balance across months
+  const histDebt=getHistoricalDebt();
 
   const pick=(r,sh)=>{
     const q=dutyQuality(r,sh);
@@ -954,12 +1065,35 @@ function autoFill(){
       const sA=sh==='n'?cnt[a].nights:sh==='e'?cnt[a].evenings:cnt[a].mornings;
       const sB=sh==='n'?cnt[b].nights:sh==='e'?cnt[b].evenings:cnt[b].mornings;
       const isBad=sh==='n'&&q<0;
+      const isBadEve=sh==='e'&&(r.isSat||r.isSun);
       const bA=isBad?cnt[a].badNights*3:0,bB=isBad?cnt[b].badNights*3:0;
+      // Historical cross-month balancing: people with more past bad nights are preferred for good nights, avoided for bad ones
+      const hA=histDebt[a]?.badNights||0, hB=histDebt[b]?.badNights||0;
+      const histFactor=isBad?2.0:-0.8; // stronger: past bad nights genuinely shield you next month
+      const hBias=(hA-hB)*histFactor;
+      // Saturday nights weighted heavier than pre-holiday nights (happen every week, more frequent burden)
+      const satW=4.0,preHolW=2.5,satEveW=3.0,sunEveW=2.0;
+      const satBA=isBad?cnt[a].satNights*satW:0, satBB=isBad?cnt[b].satNights*satW:0;
+      const phBA=isBad?cnt[a].preHolNights*preHolW:0, phBB=isBad?cnt[b].preHolNights*preHolW:0;
+      // Bad evening scoring: sat eve > sun eve (sun eve usually paired with sun night on same person anyway)
+      const beA=isBadEve?(r.isSat?cnt[a].satEvenings*satEveW:cnt[a].sunEvenings*sunEveW):0;
+      const beB=isBadEve?(r.isSat?cnt[b].satEvenings*satEveW:cnt[b].sunEvenings*sunEveW):0;
+      // Within-batch rotation for bad nights
+      const bbA=isBad?batchBadNightBias(a):0, bbB=isBad?batchBadNightBias(b):0;
+      // Evening batch rotation — rotate within batch before giving anyone a second evening
+      const batchEveningBias=(s)=>{
+        const myBatch=y3.includes(s)?y3:y2.includes(s)?y2:y1;
+        const myEve=cnt[s].evenings;
+        const batchMin=Math.min(...myBatch.map(m=>cnt[m].evenings));
+        return (myEve-batchMin)*3.5;
+      };
+      const ebA=sh==='e'?batchEveningBias(a):0, ebB=sh==='e'?batchEveningBias(b):0;
       // Sunday nights: separate spread — no one gets a 2nd before everyone has 1st
       const isSunNight=sh==='n'&&r.isSun;
       const snA=isSunNight?cnt[a].sunNights*3.5:0,snB=isSunNight?cnt[b].sunNights*3.5:0;
+      const srA=satEveRebalance(a,isBadEve&&r.isSat), srB=satEveRebalance(b,isBadEve&&r.isSat);
       const qA=cnt[a].bad*0.4-cnt[a].good*0.25,qB=cnt[b].bad*0.4-cnt[b].good*0.25;
-      return (sA*2.5+bA+snA+qA+yearBias(a,q))-(sB*2.5+bB+snB+qB+yearBias(b,q));
+      return (sA*2.5+satBA+phBA+bbA+snA+ebA+beA+srA+qA+yearBias(a,q)+hBias)-(sB*2.5+satBB+phBB+bbB+snB+ebB+beB+srB+qB+yearBias(b,q));
     });
     return cands[0];
   };
@@ -978,10 +1112,16 @@ function autoFill(){
       }
     }
     if(!r.e&&!r.eL){
-      // Sunday: assign evening to same person as night (both bad, one person takes the full day)
-      // But only if night is already set and that person isn't on leave and not locked out
+      // Get double-duty allowed list
+      const dblRaw=document.getElementById('doubleDutyList')?.value||'';
+      const dblAllowed=dblRaw.split(',').map(s=>s.trim()).filter(Boolean);
+
       let c=null;
       if(r.isSun&&r.n&&!isLeave(r.n,r.day)){
+        // Sunday: same person takes evening+night (both are bad, concentrate on one)
+        c=r.n;
+      } else if(r.n&&dblAllowed.includes(r.n)&&!isLeave(r.n,r.day)){
+        // Night person is on double-duty list — give them evening too
         c=r.n;
       } else {
         c=pick(r,'e');
@@ -989,6 +1129,8 @@ function autoFill(){
       if(c){
         r.e=c;r.eM=false;r.eD=false;
         cnt[c].total++;cnt[c].evenings++;
+        if(r.isSat)cnt[c].satEvenings++;
+        if(r.isSun)cnt[c].sunEvenings++;
         const q=dutyQuality(r,'e');
         if(q>0)cnt[c].good++;else if(q<0)cnt[c].bad++;else cnt[c].neutral++;
       }
@@ -1005,12 +1147,13 @@ function renderDist(cnt){
     if(!m.length)return;
     html+=`<div style="margin:10px 0 5px"><span class="tag ${c}" style="font-size:10px">${l}</span></div>`;
     m.forEach(s=>{
-      const d=cnt[s]||{total:0,nights:0,evenings:0,mornings:0,badNights:0};
+      const d=cnt[s]||{total:0,nights:0,evenings:0,satEvenings:0,sunEvenings:0,mornings:0,badNights:0};
+      const badEve=(d.satEvenings||0)+(d.sunEvenings||0);
       html+=`<div class="dist-row">
         <span style="font-weight:600;font-size:11px">${s}</span>
         <div class="dpills">
           <span class="dp dp-n" title="Nights">🌙${d.nights}${d.badNights?`<span style="color:#c026d3;font-size:9px">(${d.badNights}✗)</span>`:''}</span>
-          <span class="dp dp-e" title="Evenings">🌆${d.evenings}</span>
+          <span class="dp dp-e" title="Evenings">🌆${d.evenings}${badEve?`<span style="color:#c026d3;font-size:9px">(${badEve}✗)</span>`:''}</span>
           <span class="dp dp-m" title="Mornings">🌅${d.mornings||0}</span>
           <span class="dp dp-t" title="Total">Σ${d.total}</span>
         </div>
@@ -1090,18 +1233,208 @@ function exportExcel(){
 // ── SAVE / LOAD ───────────────────────────────────────────────────────
 function save(){
   if(!roster)return;
-  localStorage.setItem(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,morning:document.getElementById('morningSundayHoliday').checked,nightOff:document.getElementById('nightOffRule').checked}}));
+  localStorage.setItem(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,morning:document.getElementById('morningSundayHoliday').checked,nightOff:document.getElementById('nightOffRule').checked,doubleDuty:document.getElementById('doubleDutyList').value}}));
   document.getElementById('loadBtn').style.display='inline-flex';
+  document.getElementById('saveHistBtn').style.display='inline-flex';
+  document.getElementById('snapBtn').style.display='inline-flex';
 }
 function loadDraft(){
   const d=localStorage.getItem(KEY);if(!d)return;
   const p=JSON.parse(d);
-  if(p.settings){document.getElementById('holidays').value=p.settings.holidays||'';document.getElementById('leaves').value=p.settings.leaves||'';document.getElementById('hospital').value=p.settings.hospital||'';document.getElementById('morningSundayHoliday').checked=p.settings.morning!==false;document.getElementById('nightOffRule').checked=p.settings.nightOff!==false;}
+  if(p.settings){document.getElementById('holidays').value=p.settings.holidays||'';document.getElementById('leaves').value=p.settings.leaves||'';document.getElementById('hospital').value=p.settings.hospital||'';document.getElementById('morningSundayHoliday').checked=p.settings.morning!==false;document.getElementById('nightOffRule').checked=p.settings.nightOff!==false;document.getElementById('doubleDutyList').value=p.settings.doubleDuty||'';}
   if(p.leaveMap)leaveMap=p.leaveMap;else parseLeaves();
   roster=p.roster;getStudents();renderLeaveUI();render();updateGCalList();
   toast('Draft loaded ✓','success');
 }
 function clearDraft(){if(confirm('Clear all roster data?')){localStorage.removeItem(KEY);location.reload();}}
+
+// ── HISTORY ──────────────────────────────────────────────────────────
+const HIST_KEY='kaya_v5_history';
+
+function saveToHistory(){
+  if(!roster)return toast('No roster to save');
+  const{data,year,month}=roster;
+  const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const key=`${year}-${String(month).padStart(2,'0')}`;
+
+  // compute distribution from current roster
+  getStudents();
+  const cnt={};
+  students.forEach(s=>cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,total:0});
+  data.forEach(r=>{
+    ['m','e','n'].forEach(sh=>{
+      const doc=r[sh];if(!doc||!cnt[doc])return;
+      cnt[doc].total++;
+      if(sh==='m')cnt[doc].mornings++;
+      if(sh==='e')cnt[doc].evenings++;
+      if(sh==='n'){cnt[doc].nights++;if(r.isSat||r.nextDayHol)cnt[doc].badNights++;}
+    });
+  });
+
+  const hist=loadHistory();
+  // store full roster snapshot inside history entry so it can be loaded back
+  hist[key]={label:mn,year,month,dist:cnt,savedAt:Date.now(),rosterSnap:JSON.parse(JSON.stringify(roster)),leaveSnap:JSON.parse(JSON.stringify(leaveMap))};
+  localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+  renderHistoryUI();
+  toast('Roster saved to history ✓','success');
+}
+
+function loadHistory(){
+  try{const d=localStorage.getItem(HIST_KEY);return d?JSON.parse(d):{};} catch(e){return {};}
+}
+
+function deleteHistory(key){
+  if(!confirm('Remove this month from history?'))return;
+  const hist=loadHistory();delete hist[key];
+  localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+  renderHistoryUI();toast('Removed from history','success');
+}
+
+function loadFromHistory(key){
+  const hist=loadHistory();
+  const h=hist[key];
+  if(!h||!h.rosterSnap){return toast('No full roster saved in this entry — re-save with 💾 Save to History','warn');}
+  if(!confirm(`Load the roster for ${h.label}?\n\nThis will replace your current roster. Save a snapshot first if you want to keep it.`))return;
+  roster=h.rosterSnap;
+  if(h.leaveSnap)leaveMap=h.leaveSnap;
+  // restore settings inputs
+  if(roster.hospital)document.getElementById('hospital').value=roster.hospital;
+  const mv=`${roster.year}-${String(roster.month).padStart(2,'0')}`;
+  document.getElementById('month').value=mv;
+  getStudents();renderLeaveUI();render();updateGCalList();
+  save();
+  toast(`Loaded ${h.label} from history ✓`,'success');
+}
+
+function renderHistoryUI(){
+  const hist=loadHistory();
+  const keys=Object.keys(hist).sort().reverse();
+  const el=document.getElementById('histList');if(!el)return;
+  if(!keys.length){el.innerHTML='<div style="color:var(--muted);font-size:11px;font-style:italic">No history yet — finish a roster and click 💾 Save to History.</div>';return;}
+  let html='';
+  keys.forEach(k=>{
+    const h=hist[k];
+    const dist=h.dist||{};
+    const sorted=Object.entries(dist).filter(([,d])=>d.badNights>0).sort(([,a],[,b])=>b.badNights-a.badNights).slice(0,5);
+    const pills=sorted.map(([name,d])=>`<span class="hist-debt-pill">${name} ✗${d.badNights}</span>`).join('');
+    const hasSnap=!!h.rosterSnap;
+    html+=`<div class="hist-entry">
+      <div class="hist-entry-head">
+        <span class="hist-month">${h.label}</span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <span class="hist-badge">${Object.keys(dist).length} doctors</span>
+          ${hasSnap?`<button class="btn btn-primary btn-sm" style="padding:2px 7px;font-size:10px" onclick="loadFromHistory('${k}')" title="Restore this roster into the editor">↩ Load</button>`:''}
+          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteHistory('${k}')">✕</button>
+        </div>
+      </div>
+      ${sorted.length?`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">Bad nights carried forward:</div><div class="hist-debt">${pills}</div>`:'<div style="font-size:10px;color:var(--success)">✓ No bad nights this month</div>'}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// Build cumulative "bad duty debt" from history, to be used in autoFill scoring
+function getHistoricalDebt(){
+  const hist=loadHistory();
+  const debt={};
+  Object.values(hist).forEach(h=>{
+    Object.entries(h.dist||{}).forEach(([name,d])=>{
+      if(!debt[name])debt[name]={badNights:0,nights:0,evenings:0,mornings:0};
+      debt[name].badNights+=d.badNights||0;
+      debt[name].nights+=d.nights||0;
+      debt[name].evenings+=d.evenings||0;
+      debt[name].mornings+=d.mornings||0;
+    });
+  });
+  return debt;
+}
+
+// ── SNAPSHOTS ────────────────────────────────────────────────────────
+const SNAP_KEY='kaya_v5_snapshots';
+
+function openSnapModal(){
+  if(!roster)return toast('Create a roster first','warn');
+  const mn=new Date(roster.year,roster.month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('snapNameInput').value=mn+' — ';
+  document.getElementById('snapModal').style.display='flex';
+  setTimeout(()=>{const inp=document.getElementById('snapNameInput');inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);},80);
+}
+function closeSnapModal(){document.getElementById('snapModal').style.display='none';}
+
+function confirmSnap(){
+  const label=document.getElementById('snapNameInput').value.trim();
+  if(!label)return toast('Enter a label for this snapshot','warn');
+  if(!roster)return toast('No roster to snapshot','warn');
+  closeSnapModal();
+
+  const snaps=loadSnaps();
+  const id='snap_'+Date.now();
+  snaps[id]={
+    id,label,
+    savedAt:Date.now(),
+    month:roster.month,year:roster.year,
+    monthLabel:new Date(roster.year,roster.month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'}),
+    rosterSnap:JSON.parse(JSON.stringify(roster)),
+    leaveSnap:JSON.parse(JSON.stringify(leaveMap))
+  };
+  localStorage.setItem(SNAP_KEY,JSON.stringify(snaps));
+  renderSnapsUI();
+  // open snapshots accordion
+  const btn=document.getElementById('snapAccBtn');
+  const body=document.getElementById('snapAccBody');
+  if(btn&&!btn.classList.contains('open')){btn.classList.add('open');body.classList.add('open');}
+  toast('Snapshot saved: "'+label+'" ✓','success');
+}
+
+function loadSnaps(){
+  try{const d=localStorage.getItem(SNAP_KEY);return d?JSON.parse(d):{};} catch(e){return {};}
+}
+
+function restoreSnap(id){
+  const snaps=loadSnaps();
+  const s=snaps[id];if(!s)return;
+  if(!confirm(`Restore snapshot:\n"${s.label}"?\n\nCurrent roster will be replaced. Save another snapshot first if needed.`))return;
+  roster=s.rosterSnap;
+  if(s.leaveSnap)leaveMap=s.leaveSnap;
+  if(roster.hospital)document.getElementById('hospital').value=roster.hospital;
+  document.getElementById('month').value=`${roster.year}-${String(roster.month).padStart(2,'0')}`;
+  getStudents();renderLeaveUI();render();updateGCalList();
+  save();
+  toast(`Restored: "${s.label}" ✓`,'success');
+}
+
+function deleteSnap(id){
+  if(!confirm('Delete this snapshot?'))return;
+  const snaps=loadSnaps();delete snaps[id];
+  localStorage.setItem(SNAP_KEY,JSON.stringify(snaps));
+  renderSnapsUI();toast('Snapshot deleted','success');
+}
+
+function renderSnapsUI(){
+  const snaps=loadSnaps();
+  const el=document.getElementById('snapList');if(!el)return;
+  const entries=Object.values(snaps).sort((a,b)=>b.savedAt-a.savedAt);
+  if(!entries.length){el.innerHTML='<div style="color:var(--muted);font-size:11px;font-style:italic">No snapshots yet.</div>';return;}
+  let html='';
+  entries.forEach(s=>{
+    const dt=new Date(s.savedAt);
+    const timeStr=dt.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+' '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    html+=`<div class="snap-entry">
+      <div class="snap-entry-head">
+        <span class="snap-label" title="${s.label}">${s.label}</span>
+        <div class="snap-actions">
+          <button class="btn btn-primary btn-sm" style="padding:2px 7px;font-size:10px" onclick="restoreSnap('${s.id}')" title="Restore this snapshot">↩ Load</button>
+          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteSnap('${s.id}')">✕</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+        <span class="hist-badge">${s.monthLabel}</span>
+        <span class="snap-time">${timeStr}</span>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
 
 // ── TOAST ─────────────────────────────────────────────────────────────
 function showHelp(){document.getElementById('helpOverlay').style.display='block';document.body.style.overflow='hidden';}
@@ -1148,10 +1481,12 @@ document.addEventListener('mousedown',e=>{
 
 // ── INIT ──────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
-  loadMemberData();renderYearMgmt();
+  loadMemberData();renderYearMgmt();renderHistoryUI();renderSnapsUI();
   document.getElementById('month').value=new Date().toISOString().slice(0,7);
   if(localStorage.getItem(KEY)){
     document.getElementById('loadBtn').style.display='inline-flex';
+    document.getElementById('saveHistBtn').style.display='inline-flex';
+    document.getElementById('snapBtn').style.display='inline-flex';
     try{const p=JSON.parse(localStorage.getItem(KEY));if(p.leaveMap)leaveMap=p.leaveMap;}catch(e){}
     renderLeaveUI();
   }
