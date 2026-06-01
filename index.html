@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
 :root{
   --ink:#0d1117;--paper:#f6f8fa;--card:#ffffff;--border:#d0d7de;
@@ -220,6 +221,34 @@ tr.is-sat .day-cell{color:var(--sat)}
 .modal-head-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
 .modal-body{padding:18px}
 .modal-foot{padding:10px 18px 14px;display:flex;gap:8px;justify-content:flex-end}
+
+/* ── UPLOAD WORD MODAL ── */
+.upload-drop-zone{border:2px dashed var(--border);border-radius:8px;padding:22px 12px;text-align:center;cursor:pointer;transition:all .2s;background:var(--paper);margin-bottom:10px}
+.upload-drop-zone:hover,.upload-drop-zone.drag-over{border-color:var(--primary);background:var(--primary-soft)}
+.upload-drop-zone .udz-icon{font-size:28px;margin-bottom:6px}
+.upload-drop-zone .udz-label{font-size:12px;font-weight:600;color:var(--muted)}
+.upload-drop-zone .udz-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.upload-file-chosen{display:flex;align-items:center;gap:7px;background:var(--success-soft);border:1px solid #86efac;border-radius:7px;padding:7px 10px;font-size:11px;font-weight:600;color:var(--success);margin-bottom:10px}
+.upload-file-chosen .ufc-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* saved word entries in the list */
+.word-entry{background:#fff;border:1px solid var(--border);border-radius:7px;padding:8px 10px;margin-bottom:6px;font-size:11px}
+.word-entry-head{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.word-label{font-weight:700;color:var(--ink);font-size:11px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.word-actions{display:flex;gap:3px;flex-shrink:0}
+.word-dist{margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.word-dist-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:5px}
+.word-dist-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px;padding:2px 0;font-size:10px}
+.word-dist-pills{display:flex;gap:2px;flex-wrap:wrap}
+
+/* ── PASTE IMPORT ── */
+.paste-zone-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.paste-zone-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.paste-textarea{width:100%;min-height:90px;font-family:'DM Mono',monospace;font-size:11px;border:1px solid var(--border);border-radius:6px;padding:8px;background:#fafbfc;resize:vertical;color:var(--ink)}
+.paste-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(31,111,235,.12)}
+.paste-preview{margin-top:8px;font-size:11px;color:var(--muted)}
+.paste-preview table{font-size:10px;border-collapse:collapse;width:100%}
+.paste-preview td,.paste-preview th{border:1px solid var(--border);padding:3px 6px;text-align:left}
+.paste-preview th{background:#f6f8fa;font-weight:700}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#d0d7de;border-radius:10px}
 </style>
 </head>
@@ -236,6 +265,8 @@ tr.is-sat .day-cell{color:var(--sat)}
     <button class="btn btn-ghost btn-sm" onclick="exportPDF()">↓ PDF</button>
     <button class="btn btn-ghost btn-sm" onclick="exportWord()">↓ Word</button>
     <button class="btn btn-ghost btn-sm" onclick="exportExcel()">↓ Excel</button>
+    <span style="color:#444c56;font-size:14px">|</span>
+    <button class="btn btn-ghost btn-sm" onclick="openPastePanel()" title="Paste duties from a copied Word table">📋 Paste from Word</button>
     <span style="color:#444c56;font-size:14px">|</span>
     <button class="btn btn-ghost btn-sm" id="loadBtn" style="display:none" onclick="loadDraft()">↩ Load Draft</button>
     <button class="btn btn-success btn-sm" id="saveHistBtn" style="display:none" onclick="saveToHistory()" title="Archive this roster for future balancing">💾 Save to History</button>
@@ -423,8 +454,15 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
   <!-- DISTRIBUTION -->
   <button class="acc-btn" onclick="toggleAcc(this)" id="distAccBtn">📊 Distribution <span class="chev">▼</span></button>
   <div class="acc-body" id="distAccBody">
-    <div id="distSummary"><div style="color:var(--muted);font-size:11px;text-align:center;padding:8px">Run auto-fill to see distribution</div></div>
-    
+    <div style="display:flex;gap:5px;margin-bottom:8px">
+      <button class="btn btn-primary btn-sm btn-full" onclick="calcDistNow()">📊 Calculate Now</button>
+    </div>
+    <div style="display:none;gap:5px;margin-bottom:8px" id="distExportBar">
+      <button class="btn btn-ghost btn-sm" style="flex:1;font-size:10px;color:#cdd9e5;border-color:#444c56" onclick="exportDistWord()">↓ Word</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;font-size:10px;color:#cdd9e5;border-color:#444c56" onclick="exportDistPDF()">↓ PDF</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;font-size:10px;color:#cdd9e5;border-color:#444c56" onclick="exportDistExcel()">↓ Excel</button>
+    </div>
+    <div id="distSummary"><div style="color:var(--muted);font-size:11px;text-align:center;padding:8px">Click Calculate Now to see distribution for the current roster.</div></div>
   </div>
 
   <!-- HISTORY -->
@@ -432,6 +470,14 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
   <div class="acc-body" id="histAccBody">
     <div style="color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5">Saved rosters are used by auto-fill to balance bad duties across months.</div>
     <div id="histList"><div style="color:var(--muted);font-size:11px;font-style:italic">No history yet — finish a roster and click 💾 Save to History.</div></div>
+  </div>
+
+  <!-- SAVED WORD FILES -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="wordAccBtn">📁 Previous Month Rosters (Word) <span class="chev">▼</span></button>
+  <div class="acc-body" id="wordAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">Upload a previously edited Word roster file to store it here. Download it anytime.</div>
+    <button class="btn btn-primary btn-sm btn-full" style="margin-bottom:10px" onclick="openUploadWordModal()">⬆ Upload Previous Month Word File</button>
+    <div id="wordFileList"><div style="color:var(--muted);font-size:11px;font-style:italic">No files uploaded yet.</div></div>
   </div>
 
   <!-- SNAPSHOTS -->
@@ -471,6 +517,22 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
     <div class="legend-item" style="color:var(--sat)">● Saturday</div>
   </div>
 
+  <div id="pasteImportPanel" style="display:none">
+    <div class="paste-zone-wrap">
+      <div class="paste-zone-title">
+        📋 Paste Duties from Word Table
+        <button class="btn btn-ghost btn-sm" onclick="closePastePanel()" style="margin-left:auto;font-size:10px">✕ Close</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Copy the duty table from your Word file (<b>Ctrl+A</b> inside the table → <b>Ctrl+C</b>), then paste below. Duties will be matched to the current roster by date.</div>
+      <textarea class="paste-textarea" id="pasteTextarea" placeholder="Paste your Word table here (Ctrl+V)..." onpaste="handlePasteImport(event)" oninput="handlePasteInput(this.value)"></textarea>
+      <div id="pastePreview" class="paste-preview"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap" id="pasteBtns" style="display:none">
+        <button class="btn btn-primary btn-sm" id="pasteApplyBtn" onclick="applyPastedDuties()" style="display:none">✅ Apply to Roster</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearPaste()">🗑 Clear</button>
+      </div>
+    </div>
+  </div>
+
   <div id="output">
     <div class="empty-state">
       <div class="emoji">📋</div>
@@ -499,6 +561,43 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
     <div class="modal-foot">
       <button class="btn btn-ghost btn-sm" onclick="closeSnapModal()">Cancel</button>
       <button class="btn btn-purple btn-sm" onclick="confirmSnap()">💾 Save Snapshot</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD WORD MODAL -->
+<div id="uploadWordModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeUploadWordModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-head-title">⬆ Upload Previous Month Word File</div>
+      <button onclick="closeUploadWordModal()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Label (e.g. May 2025 — Final)</label>
+        <input type="text" id="uploadWordLabel" placeholder="e.g. May 2025 — Final" onkeydown="if(event.key==='Enter')confirmUploadWord()">
+      </div>
+      <!-- drop zone -->
+      <div class="upload-drop-zone" id="uploadDropZone"
+        onclick="document.getElementById('uploadWordFileInput').click()"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleWordFileDrop(event)">
+        <div class="udz-icon">📄</div>
+        <div class="udz-label">Click to browse or drag &amp; drop</div>
+        <div class="udz-sub">.doc or .docx files accepted</div>
+      </div>
+      <input type="file" id="uploadWordFileInput" accept=".doc,.docx" style="display:none" onchange="handleWordFileSelect(event)">
+      <div id="uploadWordFileChosen" style="display:none" class="upload-file-chosen">
+        <span>📄</span>
+        <span class="ufc-name" id="uploadWordFileName"></span>
+        <button onclick="clearChosenWordFile()" style="background:none;border:none;color:var(--success);cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0">✕</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">The file is stored in your browser. Download it anytime from the panel.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="closeUploadWordModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmUploadWord()">💾 Save File</button>
     </div>
   </div>
 </div>
@@ -1137,34 +1236,228 @@ function autoFill(){
     }
   });
 
-  save();render();renderDist(cnt);toast('Auto-fill complete ✓','success');
+  save();render();calcDistNow();toast('Auto-fill complete ✓','success');
+}
+
+// ── DISTRIBUTION ──────────────────────────────────────────────────────
+// Compute full distribution counts from any roster data array
+function computeDistFromRoster(data){
+  const cnt={};
+  // build a canonical name map: normalized → canonical (first seen from memberData)
+  const canonicalMap={};
+  [...y3,...y2,...y1].forEach(s=>{canonicalMap[s.trim().toLowerCase()]=s;});
+  const canonical=s=>{const n=s.trim();return canonicalMap[n.toLowerCase()]||n;};
+
+  const allDocs=[...y3,...y2,...y1];
+  allDocs.forEach(s=>cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,satNights:0,preHolNights:0,satEvenings:0,sunEvenings:0,total:0});
+  data.forEach(r=>{
+    const add=(raw,sh)=>{
+      if(!raw)return;
+      const s=canonical(raw); // normalize to canonical member name
+      if(!cnt[s])cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,satNights:0,preHolNights:0,satEvenings:0,sunEvenings:0,total:0};
+      cnt[s].total++;
+      if(sh==='m')cnt[s].mornings++;
+      if(sh==='e'){cnt[s].evenings++;if(r.isSat)cnt[s].satEvenings++;if(r.isSun)cnt[s].sunEvenings++;}
+      if(sh==='n'){cnt[s].nights++;if(r.isSat){cnt[s].satNights++;cnt[s].badNights++;}else if(r.nextDayHol){cnt[s].preHolNights++;cnt[s].badNights++;}}
+    };
+    add(r.m,'m');add(r.e,'e');add(r.n,'n');
+  });
+  return cnt;
+}
+
+// Called by button or after auto-fill — always reads live roster
+function calcDistNow(){
+  if(!roster)return toast('Create a roster first','warn');
+  getStudents();
+  const cnt=computeDistFromRoster(roster.data);
+  renderDist(cnt);
+  // show export bar
+  document.getElementById('distExportBar').style.display='flex';
 }
 
 function renderDist(cnt){
   const groups=[{l:'3rd Year',m:y3,c:'tag-y3'},{l:'2nd Year',m:y2,c:'tag-y2'},{l:'1st Year',m:y1,c:'tag-y1'}];
+  // normalize: trim + lowercase for comparison so "Dr Rubi " and "Dr Rubi" don't both appear
+  const norm=s=>s.trim().toLowerCase();
+  const knownNorms=new Set([...y3,...y2,...y1].map(norm));
+  // only show in Other if truly not in any year group (by normalized name)
+  const extraDocs=Object.keys(cnt).filter(k=>!knownNorms.has(norm(k))&&cnt[k].total>0);
+
   let html='';
+  const renderDoc=(s,c)=>{
+    const d=cnt[s]||{total:0,nights:0,evenings:0,mornings:0,badNights:0,satEvenings:0,sunEvenings:0};
+    const badEve=(d.satEvenings||0)+(d.sunEvenings||0);
+    html+=`<div class="dist-row">
+      <span style="font-weight:600;font-size:11px">${s}</span>
+      <div class="dpills">
+        <span class="dp dp-n" title="Nights (bad in pink)">🌙${d.nights}${d.badNights?`<span style="color:#c026d3;font-size:9px">(${d.badNights}✗)</span>`:''}</span>
+        <span class="dp dp-e" title="Evenings (bad in pink)">🌆${d.evenings}${badEve?`<span style="color:#c026d3;font-size:9px">(${badEve}✗)</span>`:''}</span>
+        <span class="dp dp-m" title="Mornings">🌅${d.mornings||0}</span>
+        <span class="dp dp-t" title="Total">Σ${d.total}</span>
+      </div>
+    </div>`;
+  };
+
   groups.forEach(({l,m,c})=>{
     if(!m.length)return;
     html+=`<div style="margin:10px 0 5px"><span class="tag ${c}" style="font-size:10px">${l}</span></div>`;
-    m.forEach(s=>{
-      const d=cnt[s]||{total:0,nights:0,evenings:0,satEvenings:0,sunEvenings:0,mornings:0,badNights:0};
-      const badEve=(d.satEvenings||0)+(d.sunEvenings||0);
-      html+=`<div class="dist-row">
-        <span style="font-weight:600;font-size:11px">${s}</span>
-        <div class="dpills">
-          <span class="dp dp-n" title="Nights">🌙${d.nights}${d.badNights?`<span style="color:#c026d3;font-size:9px">(${d.badNights}✗)</span>`:''}</span>
-          <span class="dp dp-e" title="Evenings">🌆${d.evenings}${badEve?`<span style="color:#c026d3;font-size:9px">(${badEve}✗)</span>`:''}</span>
-          <span class="dp dp-m" title="Mornings">🌅${d.mornings||0}</span>
-          <span class="dp dp-t" title="Total">Σ${d.total}</span>
-        </div>
-      </div>`;
-    });
+    m.forEach(s=>renderDoc(s,c));
   });
-  document.getElementById('distSummary').innerHTML=html;
-  // auto-open distribution accordion
+  if(extraDocs.length){
+    html+=`<div style="margin:10px 0 5px"><span class="tag" style="font-size:10px;background:#f6f8fa;color:var(--muted)">Other</span></div>`;
+    extraDocs.forEach(s=>renderDoc(s,''));
+  }
+
+  // summary totals row
+  const allDocs=[...y3,...y2,...y1,...extraDocs];
+  const totN=allDocs.reduce((a,s)=>a+(cnt[s]?.nights||0),0);
+  const totE=allDocs.reduce((a,s)=>a+(cnt[s]?.evenings||0),0);
+  const totM=allDocs.reduce((a,s)=>a+(cnt[s]?.mornings||0),0);
+  const totBad=allDocs.reduce((a,s)=>a+(cnt[s]?.badNights||0),0);
+  html+=`<div style="border-top:2px solid var(--border);margin-top:8px;padding-top:6px">
+    <div class="dist-row" style="font-size:10px;color:var(--muted)">
+      <span style="font-weight:700">TOTAL SLOTS</span>
+      <div class="dpills">
+        <span class="dp dp-n">🌙${totN}</span>
+        <span class="dp dp-e">🌆${totE}</span>
+        <span class="dp dp-m">🌅${totM}</span>
+        <span class="dp dp-t">Σ${totN+totE+totM}</span>
+      </div>
+    </div>
+    ${totBad?`<div style="font-size:10px;color:#c026d3;margin-top:3px">✗ ${totBad} bad nights total (Sat/pre-holiday)</div>`:''}
+  </div>`;
+
+  document.getElementById('distSummary').innerHTML=html||'<div style="color:var(--muted);font-size:11px">No duties assigned yet.</div>';
+  // store last cnt for exports
+  window._lastDistCnt=cnt;
+  // auto-open
   const distBtn=document.getElementById('distAccBtn');
   const distBody=document.getElementById('distAccBody');
   if(distBtn&&!distBtn.classList.contains('open')){distBtn.classList.add('open');distBody.classList.add('open');}
+}
+
+// Build flat sorted rows for export: [name, year, mornings, evenings, nights, badNights, total]
+function buildDistRows(){
+  const cnt=window._lastDistCnt||{};
+  const rows=[];
+  const addGroup=(members,yearLabel)=>{
+    members.forEach(s=>{
+      const d=cnt[s]||{mornings:0,evenings:0,nights:0,badNights:0,total:0};
+      rows.push([s,yearLabel,d.mornings,d.evenings,d.nights,d.badNights,d.total]);
+    });
+  };
+  addGroup(y3,'3rd Year');addGroup(y2,'2nd Year');addGroup(y1,'1st Year');
+  // extras
+  const known=new Set([...y3,...y2,...y1]);
+  Object.keys(cnt).filter(k=>!known.has(k)&&cnt[k].total>0).forEach(s=>{
+    const d=cnt[s];
+    rows.push([s,'—',d.mornings,d.evenings,d.nights,d.badNights,d.total]);
+  });
+  return rows;
+}
+
+function exportDistWord(){
+  if(!window._lastDistCnt)return toast('Calculate distribution first','warn');
+  const mn=roster?new Date(roster.year,roster.month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'}):'Roster';
+  const rows=buildDistRows();
+  let html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset="UTF-8"><title>Distribution</title>
+  <style>@page WordSection1{size:595.3pt 841.9pt;margin:50pt 50pt 50pt 50pt;}div.WordSection1{page:WordSection1;}
+  body{font-family:"Times New Roman",serif;font-size:10pt}
+  h3{text-align:center;font-size:13pt;margin:2pt 0}
+  h4{text-align:center;font-size:11pt;font-weight:normal;margin:2pt 0 10pt}
+  table{border-collapse:collapse;width:100%}
+  th{background:#00b0be;color:#fff;padding:4pt 6pt;border:0.5pt solid #444;font-size:10pt;text-align:center}
+  td{border:0.5pt solid #888;padding:3pt 6pt;font-size:9.5pt;text-align:center;vertical-align:middle}
+  td:first-child{text-align:left;font-weight:600}
+  .y3{background:#f3f0ff}.y2{background:#eff6ff}.y1{background:#f0fdf4}
+  .bad{color:#a21caf;font-weight:700}
+  tr.sep td{background:#e2e8f0;font-weight:700;font-size:10pt}
+  </style></head><body><div class="WordSection1">
+  <h3>Duty Distribution — ${mn}</h3>
+  <h4>Department of Kayachikitsa</h4>
+  <table>
+  <tr><th>Name</th><th>Year</th><th>Mornings</th><th>Evenings</th><th>Nights</th><th>Bad Nights</th><th>Total</th></tr>`;
+
+  let lastYear='';
+  rows.forEach(([name,yr,m,e,n,bad,tot])=>{
+    if(yr!==lastYear){
+      html+=`<tr class="sep"><td colspan="7">${yr}</td></tr>`;
+      lastYear=yr;
+    }
+    const cls=yr==='3rd Year'?'y3':yr==='2nd Year'?'y2':yr==='1st Year'?'y1':'';
+    html+=`<tr class="${cls}"><td>${name}</td><td>${yr}</td><td>${m}</td><td>${e}</td><td>${n}</td><td class="${bad>0?'bad':''}">${bad||0}</td><td><b>${tot}</b></td></tr>`;
+  });
+
+  // totals
+  const totM=rows.reduce((a,r)=>a+r[2],0),totE=rows.reduce((a,r)=>a+r[3],0),totN=rows.reduce((a,r)=>a+r[4],0),totBad=rows.reduce((a,r)=>a+r[5],0),totAll=rows.reduce((a,r)=>a+r[6],0);
+  html+=`<tr style="background:#f6f8fa;font-weight:700"><td>TOTAL</td><td></td><td>${totM}</td><td>${totE}</td><td>${totN}</td><td class="${totBad>0?'bad':''}">${totBad}</td><td>${totAll}</td></tr>`;
+  html+=`</table></div></body></html>`;
+
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff',html],{type:'application/msword'}));
+  a.download=`Distribution_${mn.replace(' ','_')}.doc`;
+  a.click();
+  toast('Distribution Word exported ✓','success');
+}
+
+function exportDistPDF(){
+  if(!window._lastDistCnt||!jsPDF)return toast('Calculate distribution first','warn');
+  const mn=roster?new Date(roster.year,roster.month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'}):'Roster';
+  const rows=buildDistRows();
+  const doc=new jsPDF({format:'a4'});
+  doc.setFont('times','normal');
+  doc.setFontSize(13);doc.text(`Duty Distribution — ${mn}`,105,14,{align:'center'});
+  doc.setFontSize(10);doc.text('Department of Kayachikitsa',105,20,{align:'center'});
+
+  const body=[];let lastYear='';
+  rows.forEach(([name,yr,m,e,n,bad,tot])=>{
+    if(yr!==lastYear){body.push([{content:yr,colSpan:7,styles:{fontStyle:'bold',fillColor:[226,232,240],textColor:[30,30,30]}}]);lastYear=yr;}
+    body.push([name,yr,m,e,n,bad||0,tot]);
+  });
+  const totM=rows.reduce((a,r)=>a+r[2],0),totE=rows.reduce((a,r)=>a+r[3],0),totN=rows.reduce((a,r)=>a+r[4],0),totBad=rows.reduce((a,r)=>a+r[5],0),totAll=rows.reduce((a,r)=>a+r[6],0);
+  body.push([{content:'TOTAL',styles:{fontStyle:'bold'}},{content:'',styles:{}},totM,totE,totN,totBad,totAll]);
+
+  doc.autoTable({
+    startY:26,
+    head:[['Name','Year','Mornings','Evenings','Nights','Bad Nights','Total']],
+    body,
+    styles:{font:'times',fontSize:8.5,cellPadding:1.6},
+    headStyles:{fillColor:[0,176,190],textColor:255,fontStyle:'bold',halign:'center'},
+    columnStyles:{0:{halign:'left'},1:{halign:'center'},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'},5:{halign:'center'},6:{halign:'center',fontStyle:'bold'}},
+    didParseCell:d=>{
+      if(d.section==='body'&&Array.isArray(d.row.raw)){
+        const yr=d.row.raw[1];
+        if(yr==='3rd Year')d.cell.styles.fillColor=[243,240,255];
+        else if(yr==='2nd Year')d.cell.styles.fillColor=[239,246,255];
+        else if(yr==='1st Year')d.cell.styles.fillColor=[240,253,244];
+        if(d.column.index===5&&d.row.raw[5]>0)d.cell.styles.textColor=[162,28,175];
+      }
+    },
+    margin:{left:12,right:12}
+  });
+  doc.save(`Distribution_${mn.replace(' ','_')}.pdf`);
+  toast('Distribution PDF exported ✓','success');
+}
+
+function exportDistExcel(){
+  if(!window._lastDistCnt)return toast('Calculate distribution first','warn');
+  const mn=roster?new Date(roster.year,roster.month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'}):'Roster';
+  const rows=buildDistRows();
+  const header=[`Duty Distribution — ${mn}`];
+  const cols=['Name','Year','Mornings','Evenings','Nights','Bad Nights','Total'];
+  const data=[header,[],cols];
+  let lastYear='';
+  rows.forEach(([name,yr,m,e,n,bad,tot])=>{
+    if(yr!==lastYear){data.push([yr]);lastYear=yr;}
+    data.push([name,yr,m,e,n,bad||0,tot]);
+  });
+  const totM=rows.reduce((a,r)=>a+r[2],0),totE=rows.reduce((a,r)=>a+r[3],0),totN=rows.reduce((a,r)=>a+r[4],0),totBad=rows.reduce((a,r)=>a+r[5],0),totAll=rows.reduce((a,r)=>a+r[6],0);
+  data.push([],['TOTAL','',totM,totE,totN,totBad,totAll]);
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Distribution');
+  XLSX.writeFile(wb,`Distribution_${mn.replace(' ','_')}.xlsx`);
+  toast('Distribution Excel exported ✓','success');
 }
 
 // ── GCAL ──────────────────────────────────────────────────────────────
@@ -1479,9 +1772,300 @@ document.addEventListener('mousedown',e=>{
   if(ed&&!ed.contains(e.target)&&!e.target.closest('.duty-chip'))closeAllEditors();
 });
 
+// ── UPLOAD WORD FILES ─────────────────────────────────────────────────
+const WORD_FILES_KEY='kaya_v5_word_files';
+let pendingWordFileData=null;
+
+function openUploadWordModal(){
+  document.getElementById('uploadWordModal').style.display='flex';
+  document.getElementById('uploadWordLabel').value='';
+  clearChosenWordFile();
+  setTimeout(()=>document.getElementById('uploadWordLabel').focus(),80);
+}
+function closeUploadWordModal(){
+  document.getElementById('uploadWordModal').style.display='none';
+  clearChosenWordFile();
+}
+function clearChosenWordFile(){
+  pendingWordFileData=null;
+  document.getElementById('uploadWordFileChosen').style.display='none';
+  document.getElementById('uploadDropZone').style.display='block';
+  document.getElementById('uploadWordFileInput').value='';
+}
+function handleWordFileSelect(e){const file=e.target.files[0];if(file)readWordFile(file);}
+function handleWordFileDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadDropZone').classList.remove('drag-over');
+  const file=e.dataTransfer.files[0];
+  if(!file||!file.name.match(/\.(doc|docx)$/i))return toast('Please drop a .doc or .docx file','warn');
+  readWordFile(file);
+}
+function readWordFile(file){
+  pendingWordFileData={name:file.name};
+  const rB64=new FileReader(),rAB=new FileReader();
+  rB64.onload=ev=>{pendingWordFileData.base64=ev.target.result;tryShowFileChosen(file.name);};
+  rAB.onload=ev=>{pendingWordFileData.arrayBuffer=ev.target.result;tryShowFileChosen(file.name);};
+  rB64.readAsDataURL(file);
+  rAB.readAsArrayBuffer(file);
+}
+function tryShowFileChosen(name){
+  if(!pendingWordFileData.base64)return; // wait for base64 at minimum
+  document.getElementById('uploadDropZone').style.display='none';
+  document.getElementById('uploadWordFileName').textContent=name;
+  document.getElementById('uploadWordFileChosen').style.display='flex';
+  const lbl=document.getElementById('uploadWordLabel');
+  if(!lbl.value.trim())lbl.value=name.replace(/\.(doc|docx)$/i,'').replace(/_/g,' ');
+}
+
+// Parse docx ArrayBuffer via mammoth → plain text → extract table rows
+async function parseDocxTable(arrayBuffer){
+  if(!window.mammoth)return null;
+  try{
+    const result=await mammoth.extractRawText({arrayBuffer});
+    return parseRosterText(result.value);
+  }catch(e){return null;}
+}
+
+// Parse plain text from Word — find rows: date + morning + evening + night
+function parseRosterText(text){
+  const rows=[];
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const dateRe=/^(\d{1,2})[\/\-](\d{1,2})/;
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i];
+    const parts=line.split('\t').map(s=>s.trim());
+    if(parts.length>=4&&dateRe.test(parts[0])){
+      const hasDay=parts.length>=5&&/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/i.test(parts[1]);
+      const o=hasDay?2:1;
+      rows.push({rawDate:parts[0],morning:parts[o]||'',evening:parts[o+1]||'',night:parts[o+2]||''});
+    } else if(dateRe.test(line)){
+      const ahead=lines.slice(i+1,i+6);
+      let off=0;
+      if(ahead[0]&&/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/i.test(ahead[0]))off=1;
+      const morn=ahead[off]||'',eve=ahead[off+1]||'',nit=ahead[off+2]||'';
+      if(!dateRe.test(morn)&&(morn||eve||nit)){
+        rows.push({rawDate:line,morning:morn,evening:eve,night:nit});
+        i+=off+3;
+      }
+    }
+  }
+  return rows.length?rows:null;
+}
+
+// Compute distribution from parsed rows
+function computeDistFromRows(rows){
+  const cnt={};
+  const add=(name,shift)=>{
+    const n=(name||'').trim();if(!n||n==='-'||n==='–')return;
+    if(!cnt[n])cnt[n]={nights:0,evenings:0,mornings:0,total:0};
+    cnt[n].total++;
+    if(shift==='m')cnt[n].mornings++;
+    else if(shift==='e')cnt[n].evenings++;
+    else cnt[n].nights++;
+  };
+  rows.forEach(r=>{add(r.morning,'m');add(r.evening,'e');add(r.night,'n');});
+  return cnt;
+}
+
+async function confirmUploadWord(){
+  const label=document.getElementById('uploadWordLabel').value.trim();
+  if(!label)return toast('Enter a label for this file','warn');
+  if(!pendingWordFileData||!pendingWordFileData.base64)return toast('Choose a .doc or .docx file first','warn');
+  let dist=null,parsedRows=null;
+  if(pendingWordFileData.arrayBuffer&&pendingWordFileData.name.match(/\.docx$/i)){
+    parsedRows=await parseDocxTable(pendingWordFileData.arrayBuffer);
+    if(parsedRows)dist=computeDistFromRows(parsedRows);
+  }
+  const files=loadWordFiles();
+  const id='wf_'+Date.now();
+  files[id]={id,label,fileName:pendingWordFileData.name,base64:pendingWordFileData.base64,savedAt:Date.now(),dist:dist||null,parsedRows:parsedRows||null};
+  localStorage.setItem(WORD_FILES_KEY,JSON.stringify(files));
+  renderWordFilesUI();
+  const btn=document.getElementById('wordAccBtn'),body=document.getElementById('wordAccBody');
+  if(btn&&!btn.classList.contains('open')){btn.classList.add('open');body.classList.add('open');}
+  closeUploadWordModal();
+  toast(dist?`Saved ✓ (${Object.keys(dist).length} doctors found)`:'Word file saved ✓','success');
+}
+function loadWordFiles(){try{const d=localStorage.getItem(WORD_FILES_KEY);return d?JSON.parse(d):{};} catch(e){return {};}}
+function downloadWordFile(id){
+  const f=loadWordFiles()[id];if(!f)return;
+  const a=document.createElement('a');a.href=f.base64;a.download=f.fileName;a.click();
+}
+function deleteWordFile(id){
+  if(!confirm('Delete this saved Word file?'))return;
+  const files=loadWordFiles();delete files[id];
+  localStorage.setItem(WORD_FILES_KEY,JSON.stringify(files));
+  renderWordFilesUI();toast('File deleted','success');
+}
+function toggleWordDist(id){
+  const el=document.getElementById('wdist_'+id);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+function renderWordFilesUI(){
+  const files=loadWordFiles();
+  const el=document.getElementById('wordFileList');if(!el)return;
+  const entries=Object.values(files).sort((a,b)=>b.savedAt-a.savedAt);
+  if(!entries.length){el.innerHTML='<div style="color:var(--muted);font-size:11px;font-style:italic">No files uploaded yet.</div>';return;}
+  let html='';
+  entries.forEach(f=>{
+    const dt=new Date(f.savedAt);
+    const timeStr=dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    let distHtml='';
+    if(f.dist&&Object.keys(f.dist).length){
+      const sorted=Object.entries(f.dist).sort((a,b)=>b[1].total-a[1].total);
+      distHtml=`<div class="word-dist" id="wdist_${f.id}" style="display:none">
+        <div class="word-dist-title">📊 Duty Distribution</div>
+        ${sorted.map(([name,d])=>`<div class="word-dist-row">
+          <span style="font-weight:600">${name}</span>
+          <div class="word-dist-pills">
+            <span class="dp dp-n" title="Nights">🌙${d.nights}</span>
+            <span class="dp dp-e" title="Evenings">🌆${d.evenings}</span>
+            <span class="dp dp-m" title="Mornings">🌅${d.mornings}</span>
+            <span class="dp dp-t" title="Total">Σ${d.total}</span>
+          </div></div>`).join('')}
+      </div>`;
+    }
+    const hasRows=f.parsedRows&&f.parsedRows.length;
+    html+=`<div class="word-entry">
+      <div class="word-entry-head">
+        <span class="word-label" title="${f.label}">${f.label}</span>
+        <div class="word-actions">
+          ${f.dist?`<button class="btn btn-warn btn-sm" style="padding:2px 7px;font-size:10px" onclick="toggleWordDist('${f.id}')">📊</button>`:''}
+          ${hasRows?`<button class="btn btn-purple btn-sm" style="padding:2px 7px;font-size:10px" onclick="importFromWordFile('${f.id}')" title="Import duties into current roster">⬆ Import</button>`:''}
+          <button class="btn btn-success btn-sm" style="padding:2px 7px;font-size:10px" onclick="downloadWordFile('${f.id}')" title="Download">↓</button>
+          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteWordFile('${f.id}')">✕</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
+        <span style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">📄 ${f.fileName}</span>
+        <span class="snap-time">${timeStr}</span>
+        ${f.dist?`<span class="hist-badge">${Object.keys(f.dist).length} doctors</span>`:''}
+        ${!f.dist&&f.fileName.match(/\.docx$/i)?'<span style="font-size:9px;color:var(--warn)">⚠ table not found</span>':''}
+      </div>
+      ${distHtml}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// Import duties from saved file into current roster
+function importFromWordFile(id){
+  if(!roster)return toast('Create a roster table first','warn');
+  const f=loadWordFiles()[id];
+  if(!f||!f.parsedRows)return toast('No parsed data in this file','warn');
+  const applied=applyParsedRowsToRoster(f.parsedRows);
+  if(applied===0)return toast('No matching dates found — is the month the same?','warn');
+  save();render();toast(`Imported ${applied} rows from "${f.label}" ✓`,'success');
+}
+
+// ── PASTE FROM WORD ───────────────────────────────────────────────────
+let parsedPasteRows=null;
+
+function openPastePanel(){
+  if(!roster)return toast('Create a roster table first','warn');
+  document.getElementById('pasteImportPanel').style.display='block';
+  document.getElementById('pasteTextarea').value='';
+  document.getElementById('pastePreview').innerHTML='';
+  document.getElementById('pasteApplyBtn').style.display='none';
+  parsedPasteRows=null;
+  document.getElementById('mainArea').scrollTop=0;
+  setTimeout(()=>document.getElementById('pasteTextarea').focus(),80);
+}
+function closePastePanel(){
+  document.getElementById('pasteImportPanel').style.display='none';
+  parsedPasteRows=null;
+}
+function clearPaste(){
+  document.getElementById('pasteTextarea').value='';
+  document.getElementById('pastePreview').innerHTML='';
+  document.getElementById('pasteApplyBtn').style.display='none';
+  parsedPasteRows=null;
+}
+
+// Intercept paste to grab HTML clipboard (preserves Word table structure)
+function handlePasteImport(e){
+  const html=e.clipboardData&&e.clipboardData.getData('text/html');
+  if(html&&html.includes('<table')){
+    e.preventDefault();
+    const rows=parseHtmlTable(html);
+    if(rows&&rows.length){
+      document.getElementById('pasteTextarea').value='[Table pasted — '+rows.length+' data rows detected]';
+      showPastePreview(rows);
+      return;
+    }
+  }
+  setTimeout(()=>handlePasteInput(document.getElementById('pasteTextarea').value),50);
+}
+function handlePasteInput(val){
+  if(!val.trim()){document.getElementById('pastePreview').innerHTML='';document.getElementById('pasteApplyBtn').style.display='none';return;}
+  const rows=parseRosterText(val);
+  if(rows&&rows.length)showPastePreview(rows);
+  else{document.getElementById('pastePreview').innerHTML='<span style="color:var(--danger)">⚠ Could not detect roster rows. Copy the full table from Word (Ctrl+A inside the table, then Ctrl+C).</span>';document.getElementById('pasteApplyBtn').style.display='none';}
+}
+
+// Parse HTML table (from Word clipboard)
+function parseHtmlTable(html){
+  const div=document.createElement('div');div.innerHTML=html;
+  const table=div.querySelector('table');if(!table)return null;
+  const rows=[];
+  const dateRe=/\d{1,2}[\/\-]\d{1,2}/;
+  Array.from(table.querySelectorAll('tr')).forEach(tr=>{
+    const cells=Array.from(tr.querySelectorAll('td,th')).map(c=>c.innerText.trim());
+    if(cells.length<3||!dateRe.test(cells[0]))return;
+    const hasDay=cells.length>=5&&/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/i.test(cells[1]);
+    const o=hasDay?2:1;
+    rows.push({rawDate:cells[0],morning:cells[o]||'',evening:cells[o+1]||'',night:cells[o+2]||''});
+  });
+  return rows.length?rows:null;
+}
+
+function showPastePreview(rows){
+  parsedPasteRows=rows;
+  let html=`<div style="margin-bottom:6px;color:var(--success);font-weight:600;font-size:11px">✓ ${rows.length} rows detected — preview:</div>
+    <div style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">
+    <table><thead><tr><th>Date</th><th>Morning</th><th>Evening</th><th>Night</th></tr></thead><tbody>`;
+  rows.slice(0,12).forEach(r=>{
+    html+=`<tr><td>${r.rawDate}</td><td>${r.morning||'—'}</td><td>${r.evening||'—'}</td><td>${r.night||'—'}</td></tr>`;
+  });
+  if(rows.length>12)html+=`<tr><td colspan="4" style="color:var(--muted);font-style:italic;padding:4px 6px">… and ${rows.length-12} more rows</td></tr>`;
+  html+=`</tbody></table></div>`;
+  document.getElementById('pastePreview').innerHTML=html;
+  document.getElementById('pasteApplyBtn').style.display='inline-flex';
+}
+
+function applyPastedDuties(){
+  if(!roster)return toast('Create a roster first','warn');
+  if(!parsedPasteRows)return toast('No data to apply','warn');
+  const applied=applyParsedRowsToRoster(parsedPasteRows);
+  if(applied===0)return toast('No matching dates found. Make sure the month matches.','warn');
+  save();render();closePastePanel();
+  toast(`Applied ${applied} rows to roster ✓`,'success');
+}
+
+// Core: match parsed rows → current roster by day number, write m/e/n as manual
+function applyParsedRowsToRoster(rows){
+  let count=0;
+  const dateRe=/^(\d{1,2})[\/\-]/;
+  rows.forEach(r=>{
+    const m=r.rawDate.match(dateRe);if(!m)return;
+    const day=parseInt(m[1]);
+    const row=roster.data.find(d=>d.day===day);if(!row)return;
+    let changed=false;
+    const setSlot=(sh,name)=>{
+      const n=(name||'').trim();
+      const empty=!n||n==='-'||n==='–';
+      if(empty){if(row[sh]){row[sh]='';row[sh+'M']=false;row[sh+'D']=false;changed=true;}}
+      else if(row[sh]!==n){row[sh]=n;row[sh+'M']=true;row[sh+'D']=false;changed=true;}
+    };
+    setSlot('m',r.morning);setSlot('e',r.evening);setSlot('n',r.night);
+    if(changed)count++;
+  });
+  return count;
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
-  loadMemberData();renderYearMgmt();renderHistoryUI();renderSnapsUI();
+  loadMemberData();renderYearMgmt();renderHistoryUI();renderSnapsUI();renderWordFilesUI();
   document.getElementById('month').value=new Date().toISOString().slice(0,7);
   if(localStorage.getItem(KEY)){
     document.getElementById('loadBtn').style.display='inline-flex';
