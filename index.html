@@ -37,6 +37,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;line-height:1.4}
 .btn:active{transform:scale(.97)}
+.btn:focus-visible,.acc-btn:focus-visible,.duty-chip:focus-visible,.dc-actions button:focus-visible,.dd-pill:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}.btn-primary:hover{background:#1558cc}
 .btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#126128}
 .btn-warn{background:var(--warn-soft);color:var(--warn);border-color:#d4a72c}.btn-warn:hover{background:#fef08a}
@@ -55,6 +56,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
 textarea{resize:vertical;min-height:50px}
 .checkbox-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:12px;cursor:pointer}
 .checkbox-row input{width:14px;height:14px;accent-color:var(--primary);cursor:pointer}
+.dd-picker{display:flex;flex-wrap:wrap;gap:5px}
+.dd-pill{background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:600;cursor:pointer;transition:all .12s;font-family:'DM Sans',sans-serif}
+.dd-pill:hover{border-color:var(--purple);color:var(--purple)}
+.dd-pill.on{background:var(--purple);border-color:var(--purple);color:#fff}
 
 /* ── ACCORDION ── */
 .acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;padding:11px 16px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);transition:background .15s}
@@ -63,6 +68,7 @@ textarea{resize:vertical;min-height:50px}
 .acc-btn.open .chev{transform:rotate(180deg)}
 .acc-body{display:none;padding:14px 16px;border-bottom:1px solid var(--border)}
 .acc-body.open{display:block}
+.sb-group-label{font-family:'Syne',sans-serif;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.3px;color:#8b949e;background:var(--ink);padding:7px 16px}
 
 /* ── TAGS ── */
 .tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
@@ -99,6 +105,8 @@ textarea{resize:vertical;min-height:50px}
 
 /* ── ROSTER TABLE ── */
 .roster-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.table-scroll{overflow:auto;max-height:70vh}
+.table-scroll thead th{position:sticky;top:0;z-index:5;box-shadow:0 1px 0 #30363d}
 .roster-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--ink);color:#fff}
 .roster-hdr h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
 .roster-meta{font-size:10px;color:#8b949e;margin-bottom:2px}
@@ -199,6 +207,16 @@ tr.is-sat .day-cell{color:var(--sat)}
   .main{height:auto;min-height:60vh}
   .stats-bar{grid-template-columns:repeat(2,1fr)}
 }
+/* ── TOUCH DEVICES ── */
+/* :hover doesn't fire reliably on touchscreens, so reveal-on-hover controls
+   would otherwise be invisible/hard to reach on phones & tablets. */
+@media(hover:none){
+  .dc-actions{opacity:1}
+  .dc-actions button{padding:6px 8px;font-size:14px}
+  .duty-chip{min-height:38px}
+  .btn,.dd-pill{padding:8px 14px;font-size:13px}
+  .btn-sm{padding:6px 12px;font-size:12px}
+}
 /* ── HISTORY ── */
 .hist-entry{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:7px;font-size:11px}
 .hist-entry-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
@@ -250,10 +268,26 @@ tr.is-sat .day-cell{color:var(--sat)}
 .paste-preview td,.paste-preview th{border:1px solid var(--border);padding:3px 6px;text-align:left}
 .paste-preview th{background:#f6f8fa;font-weight:700}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#d0d7de;border-radius:10px}
+
+/* ── PRINT ── */
+@media print{
+  .topbar,.sidebar,.swap-banner,.toast,.modal-overlay,.dc-actions{display:none!important}
+  .app{display:block;height:auto;overflow:visible}
+  .main{height:auto;overflow:visible;padding:0}
+  .roster-wrap{box-shadow:none;border:1px solid #000}
+  .roster-hdr{background:#fff!important;color:#000!important;border-bottom:2px solid #000}
+  .roster-hdr select,.roster-hdr button{display:none!important}
+  .table-scroll{overflow:visible!important;max-height:none!important}
+  .table-scroll thead th{position:static;background:#fff!important;color:#000!important;border-bottom:2px solid #000}
+  table{font-size:11px}
+  tbody tr.is-sun,tbody tr.is-hol,tbody tr.is-sat{background:#f0f0f0!important}
+  .duty-chip{border:none!important;background:none!important;padding:2px 0}
+  .stats-bar,.legend,.paste-zone-wrap{display:none}
+}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="app">
 
 <!-- TOP BAR -->
 <header class="topbar">
@@ -265,6 +299,7 @@ tr.is-sat .day-cell{color:var(--sat)}
     <button class="btn btn-ghost btn-sm" onclick="exportPDF()">↓ PDF</button>
     <button class="btn btn-ghost btn-sm" onclick="exportWord()">↓ Word</button>
     <button class="btn btn-ghost btn-sm" onclick="exportExcel()">↓ Excel</button>
+    <button class="btn btn-ghost btn-sm" onclick="window.print()" title="Print just the roster table">🖨 Print</button>
     <span style="color:#444c56;font-size:14px">|</span>
     <button class="btn btn-ghost btn-sm" onclick="openPastePanel()" title="Paste duties from a copied Word table">📋 Paste from Word</button>
     <span style="color:#444c56;font-size:14px">|</span>
@@ -402,6 +437,33 @@ tr.is-sat .day-cell{color:var(--sat)}
 <!-- SIDEBAR -->
 <aside class="sidebar">
 
+  <div class="sb-group-label">🗂 Archive</div>
+
+  <!-- ALL SAVED MONTHS -->
+  <button class="acc-btn open" onclick="toggleAcc(this)" id="histAccBtn">🗂 Saved Months <span id="histCountBadge" style="background:var(--success-soft);color:var(--success);border-radius:10px;padding:1px 7px;font-size:9px;margin-left:5px"></span><span class="chev">▼</span></button>
+  <div class="acc-body open" id="histAccBody" style="background:#fbfdff">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5">Every month you save with 💾 Save to History appears here. Click ↩ Load to bring a month back into the editor.</div>
+    <div id="histList"><div style="color:var(--muted);font-size:11px;font-style:italic">No months saved yet — finish a roster and click 💾 Save to History (top bar).</div></div>
+  </div>
+
+  <!-- SAVED WORD FILES -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="wordAccBtn">📁 Previous Month Rosters (Word) <span class="chev">▼</span></button>
+  <div class="acc-body" id="wordAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">Upload a previously edited Word roster file to store it here. Download it anytime.</div>
+    <button class="btn btn-primary btn-sm btn-full" style="margin-bottom:10px" onclick="openUploadWordModal()">⬆ Upload Previous Month Word File</button>
+    <div id="wordFileList"><div style="color:var(--muted);font-size:11px;font-style:italic">No files uploaded yet.</div></div>
+  </div>
+
+  <!-- SNAPSHOTS -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="snapAccBtn">📌 Snapshots <span class="chev">▼</span></button>
+  <div class="acc-body" id="snapAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5">Save named checkpoints of the current roster. Restore any version anytime — great for before/after comparisons.</div>
+    <button class="btn btn-purple btn-sm btn-full" style="margin-bottom:10px" onclick="openSnapModal()">📌 Save Snapshot Now</button>
+    <div id="snapList"><div style="color:var(--muted);font-size:11px;font-style:italic">No snapshots yet.</div></div>
+  </div>
+
+  <div class="sb-group-label">⚙ Setup</div>
+
   <!-- SETTINGS -->
   <button class="acc-btn open" onclick="toggleAcc(this)">⚙ Settings <span class="chev">▼</span></button>
   <div class="acc-body open">
@@ -414,9 +476,11 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
     </div>
     <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked><label>Morning duties: Sun & Holidays only</label></div>
     <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked><label>Night duty → next day off</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="y3CapRule"><label>3rd year: max 2 evenings + 2 nights per month</label></div>
     <div class="field" style="margin-top:6px">
-      <label>Double Duty Allowed (names, comma separated)</label>
-      <input id="doubleDutyList" placeholder="e.g. Dr Rubi, Dr Kundan" title="These people can get both evening+night on the same day during auto-fill">
+      <label>Double Duty Allowed (can do evening+night same day)</label>
+      <div id="doubleDutyPicker" class="dd-picker"><span style="color:var(--muted);font-size:11px;font-style:italic">Add members first (below) to pick names here.</span></div>
+      <input type="hidden" id="doubleDutyList">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
       <button class="btn btn-primary btn-sm btn-full" onclick="initTable()">📋 Create Table</button>
@@ -431,6 +495,8 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
     <button class="btn btn-warn btn-sm btn-full" onclick="showRotatePreview()">📅 Year-End Rotation</button>
     <div id="rotatePreview"></div>
   </div>
+
+  <div class="sb-group-label">🛠 Tools</div>
 
   <!-- LEAVE -->
   <button class="acc-btn" onclick="toggleAcc(this)">🏥 Leave Management <span class="chev">▼</span></button>
@@ -463,29 +529,6 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
       <button class="btn btn-ghost btn-sm" style="flex:1;font-size:10px;color:#cdd9e5;border-color:#444c56" onclick="exportDistExcel()">↓ Excel</button>
     </div>
     <div id="distSummary"><div style="color:var(--muted);font-size:11px;text-align:center;padding:8px">Click Calculate Now to see distribution for the current roster.</div></div>
-  </div>
-
-  <!-- HISTORY -->
-  <button class="acc-btn" onclick="toggleAcc(this)" id="histAccBtn">📜 Roster History <span class="chev">▼</span></button>
-  <div class="acc-body" id="histAccBody">
-    <div style="color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5">Saved rosters are used by auto-fill to balance bad duties across months.</div>
-    <div id="histList"><div style="color:var(--muted);font-size:11px;font-style:italic">No history yet — finish a roster and click 💾 Save to History.</div></div>
-  </div>
-
-  <!-- SAVED WORD FILES -->
-  <button class="acc-btn" onclick="toggleAcc(this)" id="wordAccBtn">📁 Previous Month Rosters (Word) <span class="chev">▼</span></button>
-  <div class="acc-body" id="wordAccBody">
-    <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">Upload a previously edited Word roster file to store it here. Download it anytime.</div>
-    <button class="btn btn-primary btn-sm btn-full" style="margin-bottom:10px" onclick="openUploadWordModal()">⬆ Upload Previous Month Word File</button>
-    <div id="wordFileList"><div style="color:var(--muted);font-size:11px;font-style:italic">No files uploaded yet.</div></div>
-  </div>
-
-  <!-- SNAPSHOTS -->
-  <button class="acc-btn" onclick="toggleAcc(this)" id="snapAccBtn">📌 Snapshots <span class="chev">▼</span></button>
-  <div class="acc-body" id="snapAccBody">
-    <div style="color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5">Save named checkpoints of the current roster. Restore any version anytime — great for before/after comparisons.</div>
-    <button class="btn btn-purple btn-sm btn-full" style="margin-bottom:10px" onclick="openSnapModal()">📌 Save Snapshot Now</button>
-    <div id="snapList"><div style="color:var(--muted);font-size:11px;font-style:italic">No snapshots yet.</div></div>
   </div>
 
 </aside>
@@ -549,7 +592,7 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
   <div class="modal-box">
     <div class="modal-head">
       <div class="modal-head-title">📌 Save Snapshot</div>
-      <button onclick="closeSnapModal()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+      <button onclick="closeSnapModal()" aria-label="Close" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -570,7 +613,7 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
   <div class="modal-box">
     <div class="modal-head">
       <div class="modal-head-title">⬆ Upload Previous Month Word File</div>
-      <button onclick="closeUploadWordModal()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+      <button onclick="closeUploadWordModal()" aria-label="Close" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -591,7 +634,7 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
       <div id="uploadWordFileChosen" style="display:none" class="upload-file-chosen">
         <span>📄</span>
         <span class="ufc-name" id="uploadWordFileName"></span>
-        <button onclick="clearChosenWordFile()" style="background:none;border:none;color:var(--success);cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0">✕</button>
+        <button onclick="clearChosenWordFile()" aria-label="Remove chosen file" title="Remove" style="background:none;border:none;color:var(--success);cursor:pointer;font-size:14px;line-height:1;padding:0;flex-shrink:0">✕</button>
       </div>
       <div style="font-size:11px;color:var(--muted)">The file is stored in your browser. Download it anytime from the panel.</div>
     </div>
@@ -607,6 +650,41 @@ const jsPDF=window.jspdf?.jsPDF;
 let roster=null,students=[],leaveMap={},dmsMode=false;
 let y3=[],y2=[],y1=[];
 const KEY='kaya_v5';
+
+// ── STORAGE SAFETY ──────────────────────────────────────────────────
+// Tests whether localStorage is actually writable in this browser/context.
+// Some browsers (Safari with "Block All Cookies", private/incognito windows,
+// strict tracking-protection modes) let getItem() work but throw on setItem(),
+// which would otherwise fail SILENTLY and make the app look like it never saves.
+function storageAvailable(){
+  try{
+    const t='__storage_test__';
+    localStorage.setItem(t,'1');
+    const ok=localStorage.getItem(t)==='1';
+    localStorage.removeItem(t);
+    return ok;
+  }catch(e){return false;}
+}
+// Wrap every write so a failure is visible instead of silently dropped.
+function safeSet(key,value){
+  try{localStorage.setItem(key,value);return true;}
+  catch(e){
+    console.error('Storage write failed for key',key,e);
+    toast('⚠ Save failed — your browser is blocking local storage (Private/Incognito mode, or "Block All Cookies" in Safari). Open this page in a normal browser window/tab.','danger');
+    return false;
+  }
+}
+function showStorageBanner(){
+  if(document.getElementById('storageBanner'))return;
+  const b=document.createElement('div');
+  b.id='storageBanner';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#cf222e;color:#fff;font-family:DM Sans,sans-serif;font-size:13px;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)';
+  b.innerHTML=`<span>⚠ Your browser is blocking saved data on this page, so nothing will persist between visits. This usually means you're in <b>Private/Incognito mode</b>, or have <b>"Block All Cookies"</b> (Safari) / strict tracking protection enabled. Open this page in a normal browser tab to fix it.</span>
+  <button style="background:#fff;color:#cf222e;border:none;border-radius:5px;padding:4px 10px;font-weight:700;font-size:12px;cursor:pointer" onclick="document.getElementById('storageBanner').remove();document.getElementById('app').style.paddingTop='0'">Dismiss</button>`;
+  document.body.prepend(b);
+  const app=document.getElementById('app');
+  if(app)app.style.paddingTop=b.offsetHeight+'px';
+}
 const INDIAN_HOLIDAYS={
   '2026-01-26':'Republic Day','2026-03-08':'Maha Shivratri','2026-03-14':'Holi',
   '2026-04-03':'Good Friday','2026-04-14':'Ambedkar Jayanti','2026-05-01':'Labour Day',
@@ -663,6 +741,27 @@ function renderYearMgmt(){
   });
   document.getElementById('yearMgmtUI').innerHTML=html;
   populateLeaveDocSel();
+  renderDoubleDutyPicker();
+}
+function getAllMemberNames(){return [...memberData.y3,...memberData.y2,...memberData.y1];}
+function renderDoubleDutyPicker(){
+  const el=document.getElementById('doubleDutyPicker');if(!el)return;
+  const names=getAllMemberNames();
+  const hidden=document.getElementById('doubleDutyList');
+  const selected=(hidden.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(!names.length){el.innerHTML='<span style="color:var(--muted);font-size:11px;font-style:italic">Add members first (below) to pick names here.</span>';return;}
+  el.innerHTML=names.map(n=>{
+    const on=selected.includes(n);
+    return `<button type="button" class="dd-pill${on?' on':''}" onclick="toggleDoubleDuty('${esc(n)}')" aria-pressed="${on}">${n}</button>`;
+  }).join('');
+}
+function toggleDoubleDuty(name){
+  const hidden=document.getElementById('doubleDutyList');
+  let selected=(hidden.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(selected.includes(name))selected=selected.filter(n=>n!==name);
+  else selected.push(name);
+  hidden.value=selected.join(', ');
+  renderDoubleDutyPicker();
 }
 function esc(s){return s.replace(/'/g,"\\'");}
 function addMember(yr){
@@ -692,7 +791,7 @@ function doRotation(){
   document.getElementById('rotatePreview').innerHTML=`<div class="rotate-box" style="background:var(--success-soft);border-color:#86efac;color:var(--success)">✅ Done! Now add new 1st year members above.</div>`;
   renderYearMgmt();saveMemberData();toast('Year rotation complete','success');
 }
-function saveMemberData(){localStorage.setItem(KEY+'_members',JSON.stringify(memberData));}
+function saveMemberData(){safeSet(KEY+'_members',JSON.stringify(memberData));}
 function loadMemberData(){const d=localStorage.getItem(KEY+'_members');if(d)memberData=JSON.parse(d);}
 
 // ── LEAVE ─────────────────────────────────────────────────────────────
@@ -831,6 +930,7 @@ function render(){
         <span style="font-size:18px;font-family:'Syne',sans-serif;font-weight:700;color:${filled===total?'#3fb950':'#e3b341'}">${Math.round(filled/total*100)}%</span>
       </div>
     </div>
+    <div class="table-scroll">
     <table>
       <thead><tr>
         <th>Date</th><th>Day</th>
@@ -850,7 +950,7 @@ function render(){
       <td class="duty-cell" onclick="event.stopPropagation()">${chip(i,'n',r,false)}</td>
     </tr>`;
   });
-  html+=`</tbody></table></div>`;
+  html+=`</tbody></table></div></div>`;
   document.getElementById('output').innerHTML=html;
   renderLeaveUI();
 }
@@ -881,7 +981,7 @@ function chip(idx,sh,r,disabled){
     <button onclick="event.stopPropagation();clearSlot(${idx},'${sh}')" title="Clear">✕</button>
   </div>`:'';
 
-  return `<div class="${cls}" id="dc_${idx}_${sh}" onclick="cellClick(${idx},'${sh}')">
+  return `<div class="${cls}" id="dc_${idx}_${sh}" onclick="cellClick(${idx},'${sh}')" tabindex="0" role="button" aria-label="${val?val+' duty, click to edit':'Empty slot, click to assign'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cellClick(${idx},'${sh}')}">
     ${dot}<span class="dc-name">${name}</span>${actionBtns}
   </div>`;
 }
@@ -1018,7 +1118,7 @@ function autoFill(){
   });
 
   const cnt={};
-  students.forEach(s=>cnt[s]={total:0,good:0,bad:0,neutral:0,mornings:0,sunMornings:0,holMornings:0,evenings:0,satEvenings:0,sunEvenings:0,nights:0,satNights:0,preHolNights:0,badNights:0,sunNights:0});
+  students.forEach(s=>cnt[s]={total:0,good:0,bad:0,neutral:0,mornings:0,sunMornings:0,holMornings:0,evenings:0,satEvenings:0,sunEvenings:0,nights:0,satNights:0,preHolNights:0,badNights:0,sunNights:0,doubleDuties:0});
 
   // seed from already-placed duties
   data.forEach(r=>{
@@ -1031,6 +1131,7 @@ function autoFill(){
       if(sh==='e'){cnt[doc].evenings++;if(r.isSat)cnt[doc].satEvenings++;if(r.isSun)cnt[doc].sunEvenings++;}
       if(sh==='n'){cnt[doc].nights++;if(r.isSat){cnt[doc].satNights++;cnt[doc].badNights++;}else if(r.nextDayHol){cnt[doc].preHolNights++;cnt[doc].badNights++;}if(r.isSun)cnt[doc].sunNights++;}
     });
+    if(r.e&&r.n&&r.e===r.n)cnt[r.e].doubleDuties++;
   });
 
   const morningOnly=document.getElementById('morningSundayHoliday').checked;
@@ -1148,6 +1249,8 @@ function autoFill(){
   // Load historical bad-night debt to balance across months
   const histDebt=getHistoricalDebt();
 
+  const y3Cap=document.getElementById('y3CapRule')?.checked||false;
+
   const pick=(r,sh)=>{
     const q=dutyQuality(r,sh);
     const prev=data[r.day-2];
@@ -1157,6 +1260,12 @@ function autoFill(){
       if(takenToday.includes(s))return false;
       if(sh==='m'&&y3.includes(s))return false;
       if(nightOff&&prev&&prev.n===s)return false;
+      // 3rd-year duty cap: when the toggle is on, skip any 3rd-year who has
+      // already hit their limit for that shift type this month.
+      if(y3Cap&&y3.includes(s)){
+        if(sh==='e'&&cnt[s].evenings>=2)return false;
+        if(sh==='n'&&cnt[s].nights>=2)return false;
+      }
       return true;
     });
     if(!cands.length)return null;
@@ -1169,7 +1278,12 @@ function autoFill(){
       // Historical cross-month balancing: people with more past bad nights are preferred for good nights, avoided for bad ones
       const hA=histDebt[a]?.badNights||0, hB=histDebt[b]?.badNights||0;
       const histFactor=isBad?2.0:-0.8; // stronger: past bad nights genuinely shield you next month
-      const hBias=(hA-hB)*histFactor;
+      const hBias=sh==='n'?(hA-hB)*histFactor:0;
+      // Historical cross-month balancing for evenings and mornings
+      const heA=histDebt[a]?.evenings||0, heB=histDebt[b]?.evenings||0;
+      const histEveBias=sh==='e'?(heA-heB)*0.9:0;
+      const hmA=histDebt[a]?.mornings||0, hmB=histDebt[b]?.mornings||0;
+      const histMornBias=sh==='m'?(hmA-hmB)*0.9:0;
       // Saturday nights weighted heavier than pre-holiday nights (happen every week, more frequent burden)
       const satW=4.0,preHolW=2.5,satEveW=3.0,sunEveW=2.0;
       const satBA=isBad?cnt[a].satNights*satW:0, satBB=isBad?cnt[b].satNights*satW:0;
@@ -1192,7 +1306,7 @@ function autoFill(){
       const snA=isSunNight?cnt[a].sunNights*3.5:0,snB=isSunNight?cnt[b].sunNights*3.5:0;
       const srA=satEveRebalance(a,isBadEve&&r.isSat), srB=satEveRebalance(b,isBadEve&&r.isSat);
       const qA=cnt[a].bad*0.4-cnt[a].good*0.25,qB=cnt[b].bad*0.4-cnt[b].good*0.25;
-      return (sA*2.5+satBA+phBA+bbA+snA+ebA+beA+srA+qA+yearBias(a,q)+hBias)-(sB*2.5+satBB+phBB+bbB+snB+ebB+beB+srB+qB+yearBias(b,q));
+      return (sA*2.5+satBA+phBA+bbA+snA+ebA+beA+srA+qA+yearBias(a,q)+hBias+histEveBias+histMornBias)-(sB*2.5+satBB+phBB+bbB+snB+ebB+beB+srB+qB+yearBias(b,q));
     });
     return cands[0];
   };
@@ -1220,12 +1334,18 @@ function autoFill(){
         // Sunday: same person takes evening+night (both are bad, concentrate on one)
         c=r.n;
       } else if(r.n&&dblAllowed.includes(r.n)&&!isLeave(r.n,r.day)){
-        // Night person is on double-duty list — give them evening too
-        c=r.n;
+        // Night person is on double-duty list — but only stack them if that stays
+        // fair relative to everyone else on the list, so the load doesn't pile
+        // onto whoever happens to draw night most often.
+        const dblCounts=dblAllowed.filter(n=>cnt[n]).map(n=>cnt[n].doubleDuties);
+        const minDbl=dblCounts.length?Math.min(...dblCounts):0;
+        if(cnt[r.n].doubleDuties<=minDbl){c=r.n;}
+        else{c=pick(r,'e');}
       } else {
         c=pick(r,'e');
       }
       if(c){
+        if(c===r.n)cnt[c].doubleDuties++;
         r.e=c;r.eM=false;r.eD=false;
         cnt[c].total++;cnt[c].evenings++;
         if(r.isSat)cnt[c].satEvenings++;
@@ -1249,18 +1369,19 @@ function computeDistFromRoster(data){
   const canonical=s=>{const n=s.trim();return canonicalMap[n.toLowerCase()]||n;};
 
   const allDocs=[...y3,...y2,...y1];
-  allDocs.forEach(s=>cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,satNights:0,preHolNights:0,satEvenings:0,sunEvenings:0,total:0});
+  allDocs.forEach(s=>cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,satNights:0,preHolNights:0,satEvenings:0,sunEvenings:0,total:0,doubleDuties:0});
   data.forEach(r=>{
     const add=(raw,sh)=>{
       if(!raw)return;
       const s=canonical(raw); // normalize to canonical member name
-      if(!cnt[s])cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,satNights:0,preHolNights:0,satEvenings:0,sunEvenings:0,total:0};
+      if(!cnt[s])cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,satNights:0,preHolNights:0,satEvenings:0,sunEvenings:0,total:0,doubleDuties:0};
       cnt[s].total++;
       if(sh==='m')cnt[s].mornings++;
       if(sh==='e'){cnt[s].evenings++;if(r.isSat)cnt[s].satEvenings++;if(r.isSun)cnt[s].sunEvenings++;}
       if(sh==='n'){cnt[s].nights++;if(r.isSat){cnt[s].satNights++;cnt[s].badNights++;}else if(r.nextDayHol){cnt[s].preHolNights++;cnt[s].badNights++;}}
     };
     add(r.m,'m');add(r.e,'e');add(r.n,'n');
+    if(r.e&&r.n&&canonical(r.e)===canonical(r.n)){const s=canonical(r.e);if(cnt[s])cnt[s].doubleDuties++;}
   });
   return cnt;
 }
@@ -1285,7 +1406,7 @@ function renderDist(cnt){
 
   let html='';
   const renderDoc=(s,c)=>{
-    const d=cnt[s]||{total:0,nights:0,evenings:0,mornings:0,badNights:0,satEvenings:0,sunEvenings:0};
+    const d=cnt[s]||{total:0,nights:0,evenings:0,mornings:0,badNights:0,satEvenings:0,sunEvenings:0,doubleDuties:0};
     const badEve=(d.satEvenings||0)+(d.sunEvenings||0);
     html+=`<div class="dist-row">
       <span style="font-weight:600;font-size:11px">${s}</span>
@@ -1293,6 +1414,7 @@ function renderDist(cnt){
         <span class="dp dp-n" title="Nights (bad in pink)">🌙${d.nights}${d.badNights?`<span style="color:#c026d3;font-size:9px">(${d.badNights}✗)</span>`:''}</span>
         <span class="dp dp-e" title="Evenings (bad in pink)">🌆${d.evenings}${badEve?`<span style="color:#c026d3;font-size:9px">(${badEve}✗)</span>`:''}</span>
         <span class="dp dp-m" title="Mornings">🌅${d.mornings||0}</span>
+        ${d.doubleDuties?`<span class="dp" style="background:var(--purple-soft);color:var(--purple)" title="Double duties (evening+night same day)">⇄${d.doubleDuties}</span>`:''}
         <span class="dp dp-t" title="Total">Σ${d.total}</span>
       </div>
     </div>`;
@@ -1526,7 +1648,7 @@ function exportExcel(){
 // ── SAVE / LOAD ───────────────────────────────────────────────────────
 function save(){
   if(!roster)return;
-  localStorage.setItem(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,morning:document.getElementById('morningSundayHoliday').checked,nightOff:document.getElementById('nightOffRule').checked,doubleDuty:document.getElementById('doubleDutyList').value}}));
+  safeSet(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,morning:document.getElementById('morningSundayHoliday').checked,nightOff:document.getElementById('nightOffRule').checked,y3Cap:document.getElementById('y3CapRule').checked,doubleDuty:document.getElementById('doubleDutyList').value}}));
   document.getElementById('loadBtn').style.display='inline-flex';
   document.getElementById('saveHistBtn').style.display='inline-flex';
   document.getElementById('snapBtn').style.display='inline-flex';
@@ -1534,7 +1656,7 @@ function save(){
 function loadDraft(){
   const d=localStorage.getItem(KEY);if(!d)return;
   const p=JSON.parse(d);
-  if(p.settings){document.getElementById('holidays').value=p.settings.holidays||'';document.getElementById('leaves').value=p.settings.leaves||'';document.getElementById('hospital').value=p.settings.hospital||'';document.getElementById('morningSundayHoliday').checked=p.settings.morning!==false;document.getElementById('nightOffRule').checked=p.settings.nightOff!==false;document.getElementById('doubleDutyList').value=p.settings.doubleDuty||'';}
+  if(p.settings){document.getElementById('holidays').value=p.settings.holidays||'';document.getElementById('leaves').value=p.settings.leaves||'';document.getElementById('hospital').value=p.settings.hospital||'';document.getElementById('morningSundayHoliday').checked=p.settings.morning!==false;document.getElementById('nightOffRule').checked=p.settings.nightOff!==false;document.getElementById('y3CapRule').checked=p.settings.y3Cap||false;document.getElementById('doubleDutyList').value=p.settings.doubleDuty||'';renderDoubleDutyPicker();}
   if(p.leaveMap)leaveMap=p.leaveMap;else parseLeaves();
   roster=p.roster;getStudents();renderLeaveUI();render();updateGCalList();
   toast('Draft loaded ✓','success');
@@ -1553,7 +1675,7 @@ function saveToHistory(){
   // compute distribution from current roster
   getStudents();
   const cnt={};
-  students.forEach(s=>cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,total:0});
+  students.forEach(s=>cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,total:0,doubleDuties:0});
   data.forEach(r=>{
     ['m','e','n'].forEach(sh=>{
       const doc=r[sh];if(!doc||!cnt[doc])return;
@@ -1562,12 +1684,13 @@ function saveToHistory(){
       if(sh==='e')cnt[doc].evenings++;
       if(sh==='n'){cnt[doc].nights++;if(r.isSat||r.nextDayHol)cnt[doc].badNights++;}
     });
+    if(r.e&&r.n&&r.e===r.n&&cnt[r.e])cnt[r.e].doubleDuties++;
   });
 
   const hist=loadHistory();
   // store full roster snapshot inside history entry so it can be loaded back
   hist[key]={label:mn,year,month,dist:cnt,savedAt:Date.now(),rosterSnap:JSON.parse(JSON.stringify(roster)),leaveSnap:JSON.parse(JSON.stringify(leaveMap))};
-  localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+  safeSet(HIST_KEY,JSON.stringify(hist));
   renderHistoryUI();
   toast('Roster saved to history ✓','success');
 }
@@ -1579,7 +1702,7 @@ function loadHistory(){
 function deleteHistory(key){
   if(!confirm('Remove this month from history?'))return;
   const hist=loadHistory();delete hist[key];
-  localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+  safeSet(HIST_KEY,JSON.stringify(hist));
   renderHistoryUI();toast('Removed from history','success');
 }
 
@@ -1602,14 +1725,16 @@ function loadFromHistory(key){
 function renderHistoryUI(){
   const hist=loadHistory();
   const keys=Object.keys(hist).sort().reverse();
+  const badge=document.getElementById('histCountBadge');
+  if(badge)badge.textContent=keys.length?keys.length+' month'+(keys.length>1?'s':''):'';
   const el=document.getElementById('histList');if(!el)return;
-  if(!keys.length){el.innerHTML='<div style="color:var(--muted);font-size:11px;font-style:italic">No history yet — finish a roster and click 💾 Save to History.</div>';return;}
+  if(!keys.length){el.innerHTML='<div style="color:var(--muted);font-size:11px;font-style:italic">No months saved yet — finish a roster and click 💾 Save to History (top bar).</div>';return;}
   let html='';
   keys.forEach(k=>{
     const h=hist[k];
     const dist=h.dist||{};
-    const sorted=Object.entries(dist).filter(([,d])=>d.badNights>0).sort(([,a],[,b])=>b.badNights-a.badNights).slice(0,5);
-    const pills=sorted.map(([name,d])=>`<span class="hist-debt-pill">${name} ✗${d.badNights}</span>`).join('');
+    const sorted=Object.entries(dist).filter(([,d])=>d.badNights>0||d.evenings>0||d.mornings>0).sort(([,a],[,b])=>(b.badNights*3+b.evenings+b.mornings)-(a.badNights*3+a.evenings+a.mornings)).slice(0,6);
+    const pills=sorted.map(([name,d])=>`<span class="hist-debt-pill" title="${name}: ${d.badNights||0} bad night(s), ${d.evenings||0} evening(s), ${d.mornings||0} morning(s)">${name}${d.badNights?` 🌙✗${d.badNights}`:''}${d.evenings?` 🌆${d.evenings}`:''}${d.mornings?` 🌅${d.mornings}`:''}</span>`).join('');
     const hasSnap=!!h.rosterSnap;
     html+=`<div class="hist-entry">
       <div class="hist-entry-head">
@@ -1617,10 +1742,10 @@ function renderHistoryUI(){
         <div style="display:flex;gap:4px;align-items:center">
           <span class="hist-badge">${Object.keys(dist).length} doctors</span>
           ${hasSnap?`<button class="btn btn-primary btn-sm" style="padding:2px 7px;font-size:10px" onclick="loadFromHistory('${k}')" title="Restore this roster into the editor">↩ Load</button>`:''}
-          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteHistory('${k}')">✕</button>
+          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteHistory('${k}')" aria-label="Delete this saved month" title="Delete">✕</button>
         </div>
       </div>
-      ${sorted.length?`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">Bad nights carried forward:</div><div class="hist-debt">${pills}</div>`:'<div style="font-size:10px;color:var(--success)">✓ No bad nights this month</div>'}
+      ${sorted.length?`<div style="font-size:10px;color:var(--muted);margin-bottom:3px">Carried forward into next auto-fill:</div><div class="hist-debt">${pills}</div>`:'<div style="font-size:10px;color:var(--success)">✓ All duties balanced this month</div>'}
     </div>`;
   });
   el.innerHTML=html;
@@ -1670,7 +1795,7 @@ function confirmSnap(){
     rosterSnap:JSON.parse(JSON.stringify(roster)),
     leaveSnap:JSON.parse(JSON.stringify(leaveMap))
   };
-  localStorage.setItem(SNAP_KEY,JSON.stringify(snaps));
+  safeSet(SNAP_KEY,JSON.stringify(snaps));
   renderSnapsUI();
   // open snapshots accordion
   const btn=document.getElementById('snapAccBtn');
@@ -1699,7 +1824,7 @@ function restoreSnap(id){
 function deleteSnap(id){
   if(!confirm('Delete this snapshot?'))return;
   const snaps=loadSnaps();delete snaps[id];
-  localStorage.setItem(SNAP_KEY,JSON.stringify(snaps));
+  safeSet(SNAP_KEY,JSON.stringify(snaps));
   renderSnapsUI();toast('Snapshot deleted','success');
 }
 
@@ -1717,7 +1842,7 @@ function renderSnapsUI(){
         <span class="snap-label" title="${s.label}">${s.label}</span>
         <div class="snap-actions">
           <button class="btn btn-primary btn-sm" style="padding:2px 7px;font-size:10px" onclick="restoreSnap('${s.id}')" title="Restore this snapshot">↩ Load</button>
-          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteSnap('${s.id}')">✕</button>
+          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteSnap('${s.id}')" aria-label="Delete this snapshot" title="Delete">✕</button>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
@@ -1879,7 +2004,7 @@ async function confirmUploadWord(){
   const files=loadWordFiles();
   const id='wf_'+Date.now();
   files[id]={id,label,fileName:pendingWordFileData.name,base64:pendingWordFileData.base64,savedAt:Date.now(),dist:dist||null,parsedRows:parsedRows||null};
-  localStorage.setItem(WORD_FILES_KEY,JSON.stringify(files));
+  safeSet(WORD_FILES_KEY,JSON.stringify(files));
   renderWordFilesUI();
   const btn=document.getElementById('wordAccBtn'),body=document.getElementById('wordAccBody');
   if(btn&&!btn.classList.contains('open')){btn.classList.add('open');body.classList.add('open');}
@@ -1894,7 +2019,7 @@ function downloadWordFile(id){
 function deleteWordFile(id){
   if(!confirm('Delete this saved Word file?'))return;
   const files=loadWordFiles();delete files[id];
-  localStorage.setItem(WORD_FILES_KEY,JSON.stringify(files));
+  safeSet(WORD_FILES_KEY,JSON.stringify(files));
   renderWordFilesUI();toast('File deleted','success');
 }
 function toggleWordDist(id){
@@ -1933,7 +2058,7 @@ function renderWordFilesUI(){
           ${f.dist?`<button class="btn btn-warn btn-sm" style="padding:2px 7px;font-size:10px" onclick="toggleWordDist('${f.id}')">📊</button>`:''}
           ${hasRows?`<button class="btn btn-purple btn-sm" style="padding:2px 7px;font-size:10px" onclick="importFromWordFile('${f.id}')" title="Import duties into current roster">⬆ Import</button>`:''}
           <button class="btn btn-success btn-sm" style="padding:2px 7px;font-size:10px" onclick="downloadWordFile('${f.id}')" title="Download">↓</button>
-          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteWordFile('${f.id}')">✕</button>
+          <button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:10px" onclick="deleteWordFile('${f.id}')" aria-label="Delete this file" title="Delete">✕</button>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
@@ -2065,6 +2190,7 @@ function applyParsedRowsToRoster(rows){
 
 // ── INIT ──────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
+  if(!storageAvailable())showStorageBanner();
   loadMemberData();renderYearMgmt();renderHistoryUI();renderSnapsUI();renderWordFilesUI();
   document.getElementById('month').value=new Date().toISOString().slice(0,7);
   if(localStorage.getItem(KEY)){
@@ -2073,6 +2199,14 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('snapBtn').style.display='inline-flex';
     try{const p=JSON.parse(localStorage.getItem(KEY));if(p.leaveMap)leaveMap=p.leaveMap;}catch(e){}
     renderLeaveUI();
+  }
+  // On phones the sidebar stacks above the roster table, so leaving several
+  // sections open by default would force a long scroll before reaching it.
+  // Collapse everything to headers-only on first load; nothing is hidden,
+  // just one tap away. Desktop keeps the original open-by-default sections.
+  if(window.matchMedia('(max-width:860px)').matches){
+    document.querySelectorAll('.acc-btn.open').forEach(b=>b.classList.remove('open'));
+    document.querySelectorAll('.acc-body.open').forEach(b=>b.classList.remove('open'));
   }
 });
 </script>
