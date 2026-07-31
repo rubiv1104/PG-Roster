@@ -28,9 +28,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 /* ── LAYOUT ── */
 .app{display:grid;grid-template-columns:290px 1fr;grid-template-rows:54px 1fr;height:100vh;overflow:hidden}
 .topbar{grid-column:1/-1;background:var(--ink);color:#fff;padding:0 20px;display:flex;align-items:center;gap:12px;height:54px;border-bottom:1px solid #30363d;flex-shrink:0}
-.topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.4px;color:#fff;flex:1}
+/* The title yields space before the buttons do — the bar is a fixed 54px, so a
+   wrapped second row of controls would be clipped rather than shown. */
+.topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.4px;color:#fff;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topbar-title span{color:#58a6ff}
-.topbar-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.topbar-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0}
 .sidebar{background:var(--card);border-right:1px solid var(--border);overflow-y:auto;height:100%}
 .main{overflow-y:auto;padding:20px;background:var(--paper);height:100%}
 
@@ -217,6 +219,17 @@ tr.is-sat .day-cell{color:var(--sat)}
   .btn,.dd-pill{padding:8px 14px;font-size:13px}
   .btn-sm{padding:6px 12px;font-size:12px}
 }
+/* ── TOPBAR MENU ── */
+.menu-wrap{position:relative;display:inline-flex}
+.menu{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:9000;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:210px}
+.menu.open{display:block}
+.menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 11px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;white-space:nowrap}
+.menu button:hover{background:var(--primary-soft);color:var(--primary)}
+.menu-sep{height:1px;background:var(--border);margin:4px 2px}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:disabled:hover{background:transparent;color:#cdd9e5}
+#undoBtn,#redoBtn{font-size:15px;line-height:1;padding:4px 9px}
+
 /* ── RULES PANEL ── */
 .rule-group{margin-bottom:14px}
 .rule-group:last-child{margin-bottom:0}
@@ -232,6 +245,16 @@ tr.is-sat .day-cell{color:var(--sat)}
 .rule-why{font-size:10px;color:var(--muted);line-height:1.5;margin-top:3px;padding-left:21px}
 .rule-changed{display:inline-block;font-size:9px;font-weight:700;color:var(--warn);background:var(--warn-soft);border:1px solid #fcd34d;border-radius:5px;padding:1px 6px;margin-top:4px;margin-left:21px}
 .rules-toolbar{display:flex;gap:5px;margin-bottom:10px}
+/* discreet entry point from Settings */
+.rules-link{display:flex;align-items:center;gap:7px;width:100%;margin-top:8px;background:var(--paper);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:all .15s;text-align:left}
+.rules-link:hover{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.rules-link span[id]{background:var(--warn-soft);color:var(--warn);border:1px solid #fcd34d;border-radius:10px;padding:1px 7px;font-size:9px;font-weight:700}
+.rules-modal-box{max-width:620px;max-height:88vh;display:flex;flex-direction:column}
+.rules-modal-body{overflow-y:auto;flex:1;min-height:0}
+.adv-toggle{display:flex;align-items:center;gap:8px;width:100%;margin-top:16px;background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);cursor:pointer;transition:all .15s}
+.adv-toggle:hover{border-color:var(--primary);color:var(--primary)}
+.adv-toggle .chev{transition:transform .2s;font-size:9px}
+.adv-toggle.open .chev{transform:rotate(180deg)}
 
 /* ── CARRY-FORWARD PANEL ── */
 .cf-source{background:var(--primary-soft);border:1px solid #a5c8ff;border-radius:7px;padding:7px 9px;font-size:10.5px;color:#0b4fbd;line-height:1.5;margin-bottom:9px}
@@ -321,19 +344,27 @@ tr.is-sat .day-cell{color:var(--sat)}
 <header class="topbar">
   <div class="topbar-title">Kaya<span>chikitsa</span> Roster</div>
   <div class="topbar-actions">
+    <button class="btn btn-ghost btn-sm btn-icon" id="undoBtn" onclick="undo()" disabled title="Nothing to undo  (Ctrl+Z)">↶</button>
+    <button class="btn btn-ghost btn-sm btn-icon" id="redoBtn" onclick="redo()" disabled title="Nothing to redo  (Ctrl+Y)">↷</button>
+    <span style="color:#444c56;font-size:14px">|</span>
     <button class="btn btn-ghost btn-sm" id="dmsToggle" onclick="toggleDMS()" title="DMS Mode marks duties in bold on export">DMS: OFF</button>
     <button class="btn btn-ghost btn-sm" id="swapToggle" onclick="toggleSwap()" title="Swap two duty slots by clicking them">⇄ Swap Duties</button>
     <span style="color:#444c56;font-size:14px">|</span>
-    <button class="btn btn-ghost btn-sm" onclick="exportPDF()">↓ PDF</button>
-    <button class="btn btn-ghost btn-sm" onclick="exportWord()">↓ Word</button>
-    <button class="btn btn-ghost btn-sm" onclick="exportExcel()">↓ Excel</button>
-    <button class="btn btn-ghost btn-sm" onclick="window.print()" title="Print just the roster table">🖨 Print</button>
-    <span style="color:#444c56;font-size:14px">|</span>
-    <button class="btn btn-ghost btn-sm" onclick="openPastePanel()" title="Paste duties from a copied Word table">📋 Paste from Word</button>
+    <div class="menu-wrap">
+      <button class="btn btn-ghost btn-sm" onclick="toggleMenu(event,'exportMenu')" title="Download or print the roster">↓ Export ▾</button>
+      <div class="menu" id="exportMenu">
+        <button onclick="closeMenus();exportPDF()">📄 PDF</button>
+        <button onclick="closeMenus();exportWord()">📝 Word</button>
+        <button onclick="closeMenus();exportExcel()">📊 Excel</button>
+        <button onclick="closeMenus();window.print()">🖨 Print roster</button>
+        <div class="menu-sep"></div>
+        <button onclick="closeMenus();openPastePanel()">📋 Paste duties in from Word</button>
+      </div>
+    </div>
     <span style="color:#444c56;font-size:14px">|</span>
     <button class="btn btn-ghost btn-sm" id="loadBtn" style="display:none" onclick="loadDraft()">↩ Load Draft</button>
-    <button class="btn btn-success btn-sm" id="saveHistBtn" style="display:none" onclick="saveToHistory()" title="Archive this roster for future balancing">💾 Save to History</button>
-    <button class="btn btn-purple btn-sm" id="snapBtn" style="display:none" onclick="openSnapModal()" title="Save a named checkpoint you can return to anytime">📌 Save Snapshot</button>
+    <button class="btn btn-success btn-sm" id="saveHistBtn" style="display:none" onclick="saveToHistory()" title="Archive this roster so next month can balance against it">💾 Save to History</button>
+    <button class="btn btn-purple btn-sm" id="snapBtn" style="display:none" onclick="openSnapModal()" title="Save a named checkpoint you can return to anytime">📌 Snapshot</button>
     <button class="btn btn-danger btn-sm" onclick="clearDraft()">Reset</button>
     <button class="btn btn-ghost btn-sm" onclick="showHelp()" style="border-color:#58a6ff;color:#58a6ff">❓ Help</button>
   </div>
@@ -384,15 +415,22 @@ tr.is-sat .day-cell{color:var(--sat)}
       </div>
 
       <div style="margin-bottom:22px">
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary-soft);padding-bottom:6px;margin-bottom:12px">③a ↶ Undo &amp; Redo</div>
+        <p>The two arrows at the far left of the top bar undo and redo, exactly like Word. <b>Ctrl+Z</b> and <b>Ctrl+Y</b> work too. The last 60 changes are kept.</p>
+        <p style="margin-top:8px">Everything is undoable — assigning a name, clearing a slot, locking, swapping, adding leave, importing from Word, restoring a snapshot, and <b>a whole auto-fill in one step</b>. Hover the arrow to see exactly what will be undone before you click.</p>
+        <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px;margin-top:9px">So you can auto-fill, dislike the result, press <b>Ctrl+Z</b> once, and be back exactly where you were. Undo history resets when you close the file — use <b>📌 Snapshot</b> for versions you want to keep permanently.</div>
+      </div>
+
+      <div style="margin-bottom:22px">
         <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary-soft);padding-bottom:6px;margin-bottom:12px">③b ⚖ Duty Rules — nothing is hidden</div>
-        <p>Every rule auto-fill obeys is listed in the <b>⚖ Duty Rules</b> panel, in plain English, with its current value. Rules that you have changed from the department default are flagged in <span style="background:#fef9c3;color:#9a6700;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700">amber</span>, and the section header shows how many you have changed.</p>
+        <p>You do not need to touch these to make a roster. They are tucked away in <b>Settings → ⚖ All duty rules &amp; fairness settings</b>, and everything auto-fill obeys is listed there in plain English with its current value.</p>
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:9px">
-          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>Hard rules</b> are never broken — 3rd years get no mornings, night duty means the next day off, and auto-fill gives nobody two shifts in one day.</div>
-          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>Seniority numbers</b> are nudges, not blocks. A higher number means auto-fill tries harder to keep that batch away from that duty — but if nobody else is free, they still get it.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>The front page</b> of that box is the everyday rules — simple on/off switches like "3rd year never takes morning duty" or "Sunday evening and night go to the same person".</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>🔧 Fine-tuning numbers</b> stays folded shut. It holds the scoring weights, and you will rarely want them. Higher means <em>avoid more</em>, negative means <em>prefer</em>.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px">Anything you change from the department default is flagged in <span style="background:#fef9c3;color:#9a6700;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700">amber</span>, and <b>↺ Reset all</b> puts everything back.</div>
           <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>↓ Rule sheet</b> downloads the whole list as a Word document you can print or send to the HOD.</div>
-          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>↺ Reset to defaults</b> puts every rule back the way the department set it.</div>
         </div>
-        <p style="margin-top:9px">Change anything, then click <b>⚡ Auto-Fill</b> again to see the effect. Hover any auto-filled name in the table to read <b>why that person was chosen</b>.</p>
+        <p style="margin-top:9px">Hover any auto-filled name in the table to read <b>why that person was chosen</b>.</p>
       </div>
 
       <div style="margin-bottom:22px">
@@ -530,7 +568,11 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
     <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked onchange="onLegacyToggle('morningSundayHoliday','morningSunHolOnly')"><label>Morning duties: Sun & Holidays only</label></div>
     <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked onchange="onLegacyToggle('nightOffRule','nightOffNextDay')"><label>Night duty → next day off</label></div>
     <div class="checkbox-row"><input type="checkbox" id="y3CapRule" onchange="onLegacyToggle('y3CapRule','y3Cap')"><label>3rd year: cap evenings + nights per month</label></div>
-    <div style="font-size:10px;color:var(--muted);margin:-2px 0 6px 21px">These three are shortcuts. Every other rule lives in <b>⚖ Duty Rules</b> below.</div>
+    <button class="rules-link" onclick="openRulesModal()" title="See and change every rule auto-fill follows">
+      ⚖ All duty rules &amp; fairness settings
+      <span id="rulesLinkBadge" style="display:none"></span>
+      <span style="margin-left:auto;opacity:.55">›</span>
+    </button>
     <div class="field" style="margin-top:6px">
       <label>Double Duty Allowed (can do evening+night same day)</label>
       <div id="doubleDutyPicker" class="dd-picker"><span style="color:var(--muted);font-size:11px;font-style:italic">Add members first (below) to pick names here.</span></div>
@@ -540,17 +582,6 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
       <button class="btn btn-primary btn-sm btn-full" onclick="initTable()">📋 Create Table</button>
       <button class="btn btn-warn btn-sm btn-full" onclick="autoFill()">⚡ Auto-Fill</button>
     </div>
-  </div>
-
-  <!-- RULES -->
-  <button class="acc-btn" onclick="toggleAcc(this)" id="rulesAccBtn">⚖ Duty Rules <span id="rulesChangedBadge" style="display:none;background:var(--warn-soft);color:var(--warn);border:1px solid #fcd34d;border-radius:10px;padding:1px 7px;font-size:9px;margin-left:5px"></span><span class="chev">▼</span></button>
-  <div class="acc-body" id="rulesAccBody">
-    <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">Every rule auto-fill follows, written out. Change any of them and re-run <b>⚡ Auto-Fill</b> to see the effect. Nothing here is hidden in the code.</div>
-    <div class="rules-toolbar">
-      <button class="btn btn-ghost btn-sm" style="flex:1;color:var(--ink);border-color:var(--border)" onclick="resetRules()">↺ Reset to defaults</button>
-      <button class="btn btn-ghost btn-sm" style="flex:1;color:var(--ink);border-color:var(--border)" onclick="exportRulesSheet()" title="Download a plain-English list of the active rules">↓ Rule sheet</button>
-    </div>
-    <div id="rulesList"></div>
   </div>
 
   <!-- CARRY FORWARD -->
@@ -658,6 +689,42 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
 
 </main>
 </div><!-- .app -->
+
+<!-- RULES MODAL -->
+<div id="rulesModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeRulesModal()">
+  <div class="modal-box rules-modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-head-title">⚖ Duty Rules <span id="rulesChangedBadge" style="display:none;background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:1px 8px;font-size:9.5px;font-weight:700;vertical-align:middle;margin-left:4px"></span></div>
+        <div style="color:#8b949e;font-size:11px;margin-top:2px">Everything auto-fill follows, in plain English</div>
+      </div>
+      <button onclick="closeRulesModal()" aria-label="Close" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+    </div>
+    <div class="modal-body rules-modal-body">
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-bottom:12px">Change anything here, close this box, then click <b>⚡ Auto-Fill</b> to see the effect. Locked, manual and DMS slots are never touched, so it is safe to experiment.</div>
+      <div id="rulesSimple"></div>
+
+      <button class="adv-toggle" id="advRulesBtn" onclick="toggleAdvancedRules()">
+        <span>🔧 Fine-tuning numbers</span>
+        <span id="advChangedBadge" style="display:none;background:var(--warn-soft);color:var(--warn);border:1px solid #fcd34d;border-radius:10px;padding:1px 7px;font-size:9px;font-weight:700"></span>
+        <span class="chev" style="margin-left:auto">▼</span>
+      </button>
+      <div id="advRulesBody" style="display:none">
+        <div style="font-size:11px;color:var(--muted);line-height:1.55;margin:9px 0 12px;background:var(--paper);border-radius:7px;padding:9px 11px">
+          You will rarely need these. They control how strongly auto-fill leans in each direction when choosing between people. Higher means <b>avoid more</b>; negative means <b>prefer</b>. If a month comes out looking wrong, change the plain rules above first, and use <b>↺ Reset</b> if these get away from you.
+        </div>
+        <div id="rulesAdvanced"></div>
+      </div>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn btn-ghost btn-sm" style="color:var(--ink);border-color:var(--border)" onclick="exportRulesSheet()" title="Download the active rules as a Word document">↓ Rule sheet</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" style="color:var(--ink);border-color:var(--border)" onclick="resetRules()">↺ Reset all</button>
+        <button class="btn btn-primary btn-sm" onclick="closeRulesModal()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- SNAPSHOT MODAL -->
 <div id="snapModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeSnapModal()">
@@ -803,45 +870,45 @@ const RULE_DEFS=[
      why:'Turn off to give 1st year holiday mornings first instead.'},
   ]},
   {group:'Seniority protection (higher = more protected)',hint:'These are nudges, not hard blocks. A high number means auto-fill avoids that batch for that duty unless nobody else is free.',items:[
-    {k:'badNightY3',type:'num',def:6.0,min:0,max:20,step:.5,label:'3rd year avoids bad nights'},
-    {k:'badNightY2',type:'num',def:2.5,min:0,max:20,step:.5,label:'2nd year avoids bad nights'},
-    {k:'satEveY3',type:'num',def:4.5,min:0,max:20,step:.5,label:'3rd year avoids Saturday evenings'},
-    {k:'satEveY2',type:'num',def:1.5,min:0,max:20,step:.5,label:'2nd year avoids Saturday evenings'},
-    {k:'goodNightY3',type:'num',def:-1.5,min:-20,max:20,step:.5,label:'3rd year preferred for ordinary nights',
+    {k:'badNightY3',type:'num',def:6.0,min:0,max:20,step:.5,adv:1,label:'3rd year avoids bad nights'},
+    {k:'badNightY2',type:'num',def:2.5,min:0,max:20,step:.5,adv:1,label:'2nd year avoids bad nights'},
+    {k:'satEveY3',type:'num',def:4.5,min:0,max:20,step:.5,adv:1,label:'3rd year avoids Saturday evenings'},
+    {k:'satEveY2',type:'num',def:1.5,min:0,max:20,step:.5,adv:1,label:'2nd year avoids Saturday evenings'},
+    {k:'goodNightY3',type:'num',def:-1.5,min:-20,max:20,step:.5,adv:1,label:'3rd year preferred for ordinary nights',
      why:'Negative means preferred. This is the counterweight that stops seniors from doing no nights at all.'},
-    {k:'goodNightY2',type:'num',def:-0.6,min:-20,max:20,step:.5,label:'2nd year preferred for ordinary nights'},
+    {k:'goodNightY2',type:'num',def:-0.6,min:-20,max:20,step:.5,adv:1,label:'2nd year preferred for ordinary nights'},
   ]},
   {group:'Rotation within a batch',hint:'Stops one unlucky person absorbing every bad shift while their batch-mates get none.',items:[
-    {k:'wBatchBadNight',type:'num',def:4.5,min:0,max:20,step:.5,label:'Rotate bad nights within the batch'},
-    {k:'wBatchEvening',type:'num',def:3.5,min:0,max:20,step:.5,label:'Rotate evenings within the batch'},
-    {k:'wSunNight',type:'num',def:3.5,min:0,max:20,step:.5,label:'Spread Sunday nights'},
-    {k:'wShiftCount',type:'num',def:2.5,min:0,max:20,step:.5,label:'Weight of plain shift count',
+    {k:'wBatchBadNight',type:'num',def:4.5,min:0,max:20,step:.5,adv:1,label:'Rotate bad nights within the batch'},
+    {k:'wBatchEvening',type:'num',def:3.5,min:0,max:20,step:.5,adv:1,label:'Rotate evenings within the batch'},
+    {k:'wSunNight',type:'num',def:3.5,min:0,max:20,step:.5,adv:1,label:'Spread Sunday nights'},
+    {k:'wShiftCount',type:'num',def:2.5,min:0,max:20,step:.5,adv:1,label:'Weight of plain shift count',
      why:'How strongly auto-fill favours whoever has fewest of that shift so far.'},
   ]},
   {group:'How bad is each bad shift',hint:'Relative burden. Saturday nights happen every week, so they weigh more than the occasional pre-holiday night.',items:[
-    {k:'wSatNight',type:'num',def:4.0,min:0,max:20,step:.5,label:'Saturday night'},
-    {k:'wPreHolNight',type:'num',def:2.5,min:0,max:20,step:.5,label:'Night before a holiday'},
-    {k:'wSatEve',type:'num',def:3.0,min:0,max:20,step:.5,label:'Saturday evening'},
-    {k:'wSunEve',type:'num',def:2.0,min:0,max:20,step:.5,label:'Sunday evening'},
+    {k:'wSatNight',type:'num',def:4.0,min:0,max:20,step:.5,adv:1,label:'Saturday night'},
+    {k:'wPreHolNight',type:'num',def:2.5,min:0,max:20,step:.5,adv:1,label:'Night before a holiday'},
+    {k:'wSatEve',type:'num',def:3.0,min:0,max:20,step:.5,adv:1,label:'Saturday evening'},
+    {k:'wSunEve',type:'num',def:2.0,min:0,max:20,step:.5,adv:1,label:'Sunday evening'},
   ]},
   {group:'Senior rebalance',items:[
     {k:'satEveRebalanceOn',type:'bool',def:true,label:'Pull seniors back in when they are too far ahead',
      why:'If a 3rd year has collected clearly more good duties than their batch, their Saturday-evening protection is reduced until they have shared the load.'},
-    {k:'satEveRebalanceThreshold',type:'num',def:1.5,min:0,max:10,step:.5,label:'…how far ahead before it kicks in',dep:'satEveRebalanceOn'},
-    {k:'satEveRebalanceMul',type:'num',def:2.5,min:0,max:10,step:.5,label:'…how hard to pull them back',dep:'satEveRebalanceOn'},
+    {k:'satEveRebalanceThreshold',type:'num',def:1.5,min:0,max:10,step:.5,adv:1,label:'…how far ahead before it kicks in',dep:'satEveRebalanceOn'},
+    {k:'satEveRebalanceMul',type:'num',def:2.5,min:0,max:10,step:.5,adv:1,label:'…how hard to pull them back',dep:'satEveRebalanceOn'},
   ]},
   {group:'Carry-forward from previous months',hint:'This is what makes next month compensate for last month. Saved months feed the balance; nothing else does.',items:[
     {k:'cfEnabled',type:'bool',def:true,label:'Use previous months when balancing',
      why:'Off means every month is rostered from scratch with no memory.'},
     {k:'cfMonths',type:'num',def:1,min:1,max:12,label:'How many previous months to look back',dep:'cfEnabled',
      why:'1 = only last month. Higher values smooth over a longer run but react more slowly.'},
-    {k:'cfDecay',type:'num',def:0.5,min:0,max:1,step:.05,label:'Weight given to each older month',dep:'cfEnabled',
+    {k:'cfDecay',type:'num',def:0.5,min:0,max:1,step:.05,adv:1,label:'Weight given to each older month',dep:'cfEnabled',
      why:'0.5 means the month before last counts half as much as last month. 1 = all looked-back months count equally.'},
-    {k:'cfBadNight',type:'num',def:2.0,min:0,max:10,step:.1,label:'Shielding from bad nights',dep:'cfEnabled',
+    {k:'cfBadNight',type:'num',def:2.0,min:0,max:10,step:.1,adv:1,label:'Shielding from bad nights',dep:'cfEnabled',
      why:'Higher = a bad night last month protects you harder this month.'},
-    {k:'cfGoodNight',type:'num',def:0.8,min:0,max:10,step:.1,label:'Claim on ordinary nights',dep:'cfEnabled'},
-    {k:'cfEvening',type:'num',def:0.9,min:0,max:10,step:.1,label:'Evening balancing',dep:'cfEnabled'},
-    {k:'cfMorning',type:'num',def:0.9,min:0,max:10,step:.1,label:'Morning balancing',dep:'cfEnabled'},
+    {k:'cfGoodNight',type:'num',def:0.8,min:0,max:10,step:.1,adv:1,label:'Claim on ordinary nights',dep:'cfEnabled'},
+    {k:'cfEvening',type:'num',def:0.9,min:0,max:10,step:.1,adv:1,label:'Evening balancing',dep:'cfEnabled'},
+    {k:'cfMorning',type:'num',def:0.9,min:0,max:10,step:.1,adv:1,label:'Morning balancing',dep:'cfEnabled'},
   ]},
 ];
 
@@ -942,40 +1009,136 @@ function countChangedRules(){
   const d=defaultRules();
   return Object.keys(d).filter(k=>RULES[k]!==d[k]).length;
 }
-function renderRulesUI(){
-  const el=document.getElementById('rulesList');if(!el)return;
-  const d=defaultRules();
-  let html='';
-  RULE_DEFS.forEach(g=>{
-    html+=`<div class="rule-group"><div class="rule-group-title">${g.group}</div>`;
-    if(g.hint)html+=`<div class="rule-group-hint">${g.hint}</div>`;
-    g.items.forEach(it=>{
-      const val=RULES[it.k];
-      const changed=val!==d[it.k];
-      const off=it.dep&&!RULES[it.dep];
-      html+=`<div class="rule-row${off?' rule-off':''}">`;
-      if(it.type==='bool'){
-        html+=`<label class="rule-main"><input type="checkbox" ${val?'checked':''} ${off?'disabled':''} onchange="setRule('${it.k}',this.checked)"><span class="rule-label">${it.label}</span></label>`;
-      } else {
-        html+=`<div class="rule-main"><span class="rule-label">${it.label}</span>
-          <input class="rule-num" type="number" value="${val}" ${off?'disabled':''}
-            min="${it.min??''}" max="${it.max??''}" step="${it.step||1}"
-            onchange="setRule('${it.k}',this.value)"></div>`;
-      }
-      if(changed)html+=`<div class="rule-changed">changed — default was ${d[it.k]===true?'on':d[it.k]===false?'off':d[it.k]}</div>`;
-      if(it.why)html+=`<div class="rule-why">${it.why}</div>`;
-      html+=`</div>`;
-    });
-    html+=`</div>`;
-  });
-  el.innerHTML=html;
-  const badge=document.getElementById('rulesChangedBadge');
-  if(badge){
-    const n=countChangedRules();
-    badge.textContent=n?n+' changed':'';
-    badge.style.display=n?'inline-block':'none';
+// Two tiers: the plain-language rules people actually change sit in front, and
+// the twenty-odd scoring weights hide behind one collapsed section so the panel
+// is not a wall of numbers on open.
+function ruleRowHtml(it,d){
+  const val=RULES[it.k];
+  const changed=val!==d[it.k];
+  const off=it.dep&&!RULES[it.dep];
+  let html=`<div class="rule-row${off?' rule-off':''}">`;
+  if(it.type==='bool'){
+    html+=`<label class="rule-main"><input type="checkbox" ${val?'checked':''} ${off?'disabled':''} onchange="setRule('${it.k}',this.checked)"><span class="rule-label">${it.label}</span></label>`;
+  } else {
+    html+=`<div class="rule-main"><span class="rule-label">${it.label}</span>
+      <input class="rule-num" type="number" value="${val}" ${off?'disabled':''}
+        min="${it.min??''}" max="${it.max??''}" step="${it.step||1}"
+        onchange="setRule('${it.k}',this.value)"></div>`;
   }
+  if(changed)html+=`<div class="rule-changed">changed — default was ${d[it.k]===true?'on':d[it.k]===false?'off':d[it.k]}</div>`;
+  if(it.why)html+=`<div class="rule-why">${it.why}</div>`;
+  return html+`</div>`;
 }
+
+function renderRulesUI(){
+  const simpleEl=document.getElementById('rulesSimple');
+  const advEl=document.getElementById('rulesAdvanced');
+  if(!simpleEl||!advEl)return;
+  const d=defaultRules();
+  let simple='',adv='';
+  RULE_DEFS.forEach(g=>{
+    const s=g.items.filter(it=>!it.adv),a=g.items.filter(it=>it.adv);
+    if(s.length){
+      simple+=`<div class="rule-group"><div class="rule-group-title">${g.group}</div>`;
+      if(g.hint)simple+=`<div class="rule-group-hint">${g.hint}</div>`;
+      s.forEach(it=>simple+=ruleRowHtml(it,d));
+      simple+=`</div>`;
+    }
+    if(a.length){
+      adv+=`<div class="rule-group"><div class="rule-group-title">${g.group}</div>`;
+      if(g.hint&&!s.length)adv+=`<div class="rule-group-hint">${g.hint}</div>`;
+      a.forEach(it=>adv+=ruleRowHtml(it,d));
+      adv+=`</div>`;
+    }
+  });
+  simpleEl.innerHTML=simple;
+  advEl.innerHTML=adv;
+
+  const n=countChangedRules();
+  const advChanged=RULE_DEFS.flatMap(g=>g.items).filter(it=>it.adv&&RULES[it.k]!==d[it.k]).length;
+  const badge=document.getElementById('rulesChangedBadge');
+  if(badge){badge.textContent=n?`${n} changed`:'';badge.style.display=n?'inline-block':'none';}
+  const advBadge=document.getElementById('advChangedBadge');
+  if(advBadge){advBadge.textContent=advChanged?`${advChanged} changed`:'';advBadge.style.display=advChanged?'inline-block':'none';}
+  const link=document.getElementById('rulesLinkBadge');
+  if(link){link.textContent=n?`${n} changed`:'';link.style.display=n?'inline-block':'none';}
+}
+
+// ── RULES MODAL ──────────────────────────────────────────────────────
+function openRulesModal(){
+  renderRulesUI();
+  document.getElementById('rulesModal').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeRulesModal(){
+  document.getElementById('rulesModal').style.display='none';
+  document.body.style.overflow='';
+  if(roster)render();
+}
+function toggleAdvancedRules(){
+  const body=document.getElementById('advRulesBody'),btn=document.getElementById('advRulesBtn');
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  btn.classList.toggle('open',!open);
+}
+
+// ── UNDO / REDO ───────────────────────────────────────────────────────
+// Whole-roster snapshots rather than per-field diffs: a month is a few dozen
+// KB of JSON, and it makes every action — including auto-fill, imports and
+// restores — undoable through the same path with no special cases.
+const UNDO_LIMIT=60;
+let undoStack=[],redoStack=[];
+
+function snapState(){return JSON.stringify({roster,leaveMap,why:whyMap});}
+function applyState(s){
+  const p=JSON.parse(s);
+  roster=p.roster;leaveMap=p.leaveMap||{};whyMap=p.why||{};
+  getStudents();syncLeavesInput();
+  render();renderLeaveUI();updateStats();renderCarryForwardUI();
+  save();updateUndoUI();
+}
+// Call BEFORE mutating, with a short label naming the action in the user's terms.
+function pushUndo(label){
+  if(!roster)return;
+  undoStack.push({s:snapState(),label});
+  if(undoStack.length>UNDO_LIMIT)undoStack.shift();
+  redoStack=[];
+  updateUndoUI();
+}
+function undo(){
+  if(!undoStack.length)return toast('Nothing left to undo','warn');
+  const e=undoStack.pop();
+  redoStack.push({s:snapState(),label:e.label});
+  applyState(e.s);
+  toast('Undone: '+e.label,'success');
+}
+function redo(){
+  if(!redoStack.length)return toast('Nothing to redo','warn');
+  const e=redoStack.pop();
+  undoStack.push({s:snapState(),label:e.label});
+  applyState(e.s);
+  toast('Redone: '+e.label,'success');
+}
+function updateUndoUI(){
+  const ub=document.getElementById('undoBtn'),rb=document.getElementById('redoBtn');
+  if(!ub||!rb)return;
+  const u=undoStack[undoStack.length-1],r=redoStack[redoStack.length-1];
+  ub.disabled=!u;rb.disabled=!r;
+  ub.title=u?`Undo: ${u.label}  (Ctrl+Z)`:'Nothing to undo  (Ctrl+Z)';
+  rb.title=r?`Redo: ${r.label}  (Ctrl+Y)`:'Nothing to redo  (Ctrl+Y)';
+}
+// Shift name for undo labels
+function shName(sh){return sh==='m'?'morning':sh==='e'?'evening':'night';}
+
+document.addEventListener('keydown',e=>{
+  if(!(e.ctrlKey||e.metaKey))return;
+  const t=e.target;
+  // never hijack the shortcut while the user is editing a text field
+  if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable))return;
+  const k=e.key.toLowerCase();
+  if(k==='z'&&!e.shiftKey){e.preventDefault();undo();}
+  else if(k==='y'||(k==='z'&&e.shiftKey)){e.preventDefault();redo();}
+});
 
 // ── SWAP ──────────────────────────────────────────────────────────────
 let swapMode=false,swapSrc=null;
@@ -988,6 +1151,22 @@ function toggleSwap(){
   render();
 }
 function cancelSwap(){swapMode=false;swapSrc=null;toggleSwap();}
+
+// ── TOPBAR MENUS ──────────────────────────────────────────────────────
+function closeMenus(){document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));}
+function toggleMenu(ev,id){
+  ev.stopPropagation();
+  const m=document.getElementById(id),wasOpen=m.classList.contains('open');
+  closeMenus();
+  if(!wasOpen)m.classList.add('open');
+}
+document.addEventListener('click',()=>closeMenus());
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  closeMenus();
+  if(document.getElementById('rulesModal')?.style.display==='flex')closeRulesModal();
+  else if(document.getElementById('helpOverlay')?.style.display==='block')hideHelp();
+});
 
 // ── ACCORDION ─────────────────────────────────────────────────────────
 function toggleAcc(btn){
@@ -1092,6 +1271,7 @@ function addLeave(){
   const range=document.getElementById('leaveRange').value.trim();
   if(!doc||!range)return toast('Select doctor and enter dates');
   const days=parseRange(range);if(!days.length)return toast('Invalid date format');
+  pushUndo(`add leave — ${doc} (${range})`);
   if(!leaveMap[doc])leaveMap[doc]=[];
   days.forEach(d=>{if(!leaveMap[doc].includes(d))leaveMap[doc].push(d);});
   leaveMap[doc].sort((a,b)=>a-b);
@@ -1100,11 +1280,12 @@ function addLeave(){
 }
 function removeLeave(doc,day){
   if(!leaveMap[doc])return;
+  pushUndo(`remove leave — ${doc} day ${day}`);
   leaveMap[doc]=leaveMap[doc].filter(d=>d!==day);
   if(!leaveMap[doc].length)delete leaveMap[doc];
   renderLeaveUI();syncLeavesInput();save();
 }
-function clearDocLeaves(doc){delete leaveMap[doc];renderLeaveUI();syncLeavesInput();save();}
+function clearDocLeaves(doc){pushUndo(`clear all leave — ${doc}`);delete leaveMap[doc];renderLeaveUI();syncLeavesInput();save();}
 function parseRange(str){
   const days=[];
   str.split(',').forEach(p=>{p=p.trim();
@@ -1169,6 +1350,7 @@ function initTable(){
     const[y,m,day]=d.split('-').map(Number);
     if(y===yr&&m===mo&&!hols.includes(day))hols.push(day);
   });
+  pushUndo('create table'); // no-op on the very first table, when there is nothing to go back to
   roster={year:yr,month:mo,hospital:document.getElementById('hospital').value,data:[]};
   // A night is "bad" if the next day is a day off. On the last day of the month
   // that means checking next month's 1st against the national holiday list —
@@ -1269,7 +1451,10 @@ function chip(idx,sh,r,disabled){
   const name=val?`${lockIco}${escHtml(val)}`:'<span style="font-size:10px">＋ Assign</span>';
   // Auto-filled slots explain themselves on hover; manual ones have no reason
   // to give beyond "someone chose this".
-  const why=(!isMan&&!isDMS&&val&&whyMap[`${idx}_${sh}`])?whyMap[`${idx}_${sh}`]:'';
+  // The stored name must still match, or an undo could leave last decision's
+  // reasoning attached to a different person.
+  const w=whyMap[`${idx}_${sh}`];
+  const why=(!isMan&&!isDMS&&val&&w&&w.doc===val)?w.text:'';
   const whyAttr=why?` title="Why ${escHtml(val)}? ${escHtml(why)}"`:'';
 
   const actionBtns=val&&!swapMode?`<div class="dc-actions">
@@ -1300,6 +1485,7 @@ function cellClick(idx,sh){
     // execute swap
     const rA=roster.data[swapSrc.idx],rB=roster.data[idx];
     const sA=swapSrc.sh,sB=sh;
+    pushUndo(`swap ${rA[sA]||'empty'} ↔ ${rB[sB]||'empty'}`);
     const tmp={v:rA[sA],M:rA[sA+'M'],D:rA[sA+'D'],L:rA[sA+'L']};
     rA[sA]=rB[sB];rA[sA+'M']=rB[sB+'M'];rA[sA+'D']=rB[sB+'D'];rA[sA+'L']=rB[sB+'L'];
     rB[sB]=tmp.v;rB[sB+'M']=tmp.M;rB[sB+'D']=tmp.D;rB[sB+'L']=tmp.L;
@@ -1381,6 +1567,8 @@ function applyEditor(idx,sh){
   if(val&&sh==='m'&&RULES.y3NoMorning&&y3.includes(val)){toast('3rd year are not assigned morning duties','warn');return;}
   const pv=data_prevNight(idx);
   if(val&&RULES.nightOffNextDay&&pv&&pv.n===val)toast('⚠ '+val+' was on night duty yesterday — assigned anyway','warn');
+  if(val===r[sh])return; // nothing actually changed — don't clutter the undo stack
+  pushUndo(val?`assign ${val} — ${r.date} ${shName(sh)}`:`clear ${r.date} ${shName(sh)}`);
   // same-day duplicate: warn but allow (some people take double duties)
   const takenToday2=[];
   if(sh!=='m'&&r.m) takenToday2.push(r.m);
@@ -1392,10 +1580,17 @@ function applyEditor(idx,sh){
 }
 
 function closeAllEditors(){document.getElementById('activeEditor')?.remove();}
-function lockSlot(idx,sh){roster.data[idx][sh+'L']=!roster.data[idx][sh+'L'];save();renderCell(idx,sh);}
+function lockSlot(idx,sh){
+  const r=roster.data[idx];
+  pushUndo(`${r[sh+'L']?'unlock':'lock'} ${r.date} ${shName(sh)}`);
+  r[sh+'L']=!r[sh+'L'];save();renderCell(idx,sh);
+}
 function clearSlot(idx,sh){
-  if(roster.data[idx][sh+'L']){toast('Unlock first','warn');return;}
-  roster.data[idx][sh]='';roster.data[idx][sh+'M']=false;roster.data[idx][sh+'D']=false;
+  const r=roster.data[idx];
+  if(r[sh+'L']){toast('Unlock first','warn');return;}
+  if(!r[sh])return;
+  pushUndo(`clear ${r[sh]} — ${r.date} ${shName(sh)}`);
+  r[sh]='';r[sh+'M']=false;r[sh+'D']=false;
   save();renderCell(idx,sh);updateStats();
 }
 function toggleDMS(){
@@ -1416,6 +1611,7 @@ function autoFill(){
   if(!students.length)return toast('No members added','warn');
   const{data}=roster;
   const nightOff=RULES.nightOffNextDay;
+  pushUndo('auto-fill');
   whyMap={};
 
   // clear auto-fills only (keep manual, DMS, locked)
@@ -1465,7 +1661,7 @@ function autoFill(){
     const award=(row,s,kind)=>{
       row.m=s;cnt[s].total++;cnt[s].bad++;cnt[s].mornings++;
       if(kind==='sun')cnt[s].sunMornings++;else cnt[s].holMornings++;
-      whyMap[`${row.day-1}_m`]=`${kind==='sun'?'Sunday':'Holiday'} morning — fewest so far in their batch`;
+      whyMap[`${row.day-1}_m`]={doc:s,text:`${kind==='sun'?'Sunday':'Holiday'} morning — fewest so far in their batch`};
     };
     // fewest of the given counter, tie-broken by fewest mornings overall
     const pickFromPool=(row,pool,counter)=>{
@@ -1656,7 +1852,7 @@ function autoFill(){
         if(r.isSun)cnt[c].sunNights++;
         const q=dutyQuality(r,'n');
         if(q>0)cnt[c].good++;else if(q<0)cnt[c].bad++;else cnt[c].neutral++;
-        whyMap[`${idx}_n`]=explain(r,'n',c);
+        whyMap[`${idx}_n`]={doc:c,text:explain(r,'n',c)};
       }
     }
     if(!r.e&&!r.eL){
@@ -1692,7 +1888,7 @@ function autoFill(){
         if(r.isSun)cnt[c].sunEvenings++;
         const q=dutyQuality(r,'e');
         if(q>0)cnt[c].good++;else if(q<0)cnt[c].bad++;else cnt[c].neutral++;
-        whyMap[`${idx}_e`]=reason||explain(r,'e',c);
+        whyMap[`${idx}_e`]={doc:c,text:reason||explain(r,'e',c)};
       }
     }
     // Weekday mornings — only when the Sun/Holiday-only restriction is lifted.
@@ -1702,7 +1898,7 @@ function autoFill(){
       if(c){
         r.m=c;r.mM=false;r.mD=false;
         cnt[c].total++;cnt[c].mornings++;cnt[c].bad++;
-        whyMap[`${idx}_m`]=explain(r,'m',c);
+        whyMap[`${idx}_m`]={doc:c,text:explain(r,'m',c)};
       }
     }
   });
@@ -2070,6 +2266,7 @@ function loadFromHistory(key){
   const h=hist[key];
   if(!h||!h.rosterSnap){return toast('No full roster saved in this entry — re-save with 💾 Save to History','warn');}
   if(!confirm(`Load the roster for ${h.label}?\n\nThis will replace your current roster. Save a snapshot first if you want to keep it.`))return;
+  pushUndo(`load ${h.label} from history`);
   roster=h.rosterSnap;whyMap={};
   if(h.leaveSnap)leaveMap=h.leaveSnap;
   // restore settings inputs
@@ -2246,6 +2443,7 @@ function restoreSnap(id){
   const snaps=loadSnaps();
   const s=snaps[id];if(!s)return;
   if(!confirm(`Restore snapshot:\n"${s.label}"?\n\nCurrent roster will be replaced. Save another snapshot first if needed.`))return;
+  pushUndo(`restore snapshot "${s.label}"`);
   roster=s.rosterSnap;whyMap={};
   if(s.leaveSnap)leaveMap=s.leaveSnap;
   if(roster.hospital)document.getElementById('hospital').value=roster.hospital;
@@ -2512,6 +2710,7 @@ function importFromWordFile(id){
   if(!roster)return toast('Create a roster table first','warn');
   const f=loadWordFiles()[id];
   if(!f||!f.parsedRows)return toast('No parsed data in this file','warn');
+  pushUndo(`import "${f.label}"`);
   const applied=applyParsedRowsToRoster(f.parsedRows);
   if(applied===0)return toast('No matching dates found — is the month the same?','warn');
   save();render();toast(`Imported ${applied} rows from "${f.label}" ✓`,'success');
@@ -2595,6 +2794,7 @@ function showPastePreview(rows){
 function applyPastedDuties(){
   if(!roster)return toast('Create a roster first','warn');
   if(!parsedPasteRows)return toast('No data to apply','warn');
+  pushUndo('paste duties from Word');
   const applied=applyParsedRowsToRoster(parsedPasteRows);
   if(applied===0)return toast('No matching dates found. Make sure the month matches.','warn');
   save();render();closePastePanel();
