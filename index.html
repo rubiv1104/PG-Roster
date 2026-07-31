@@ -217,6 +217,34 @@ tr.is-sat .day-cell{color:var(--sat)}
   .btn,.dd-pill{padding:8px 14px;font-size:13px}
   .btn-sm{padding:6px 12px;font-size:12px}
 }
+/* ── RULES PANEL ── */
+.rule-group{margin-bottom:14px}
+.rule-group:last-child{margin-bottom:0}
+.rule-group-title{font-family:'Syne',sans-serif;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink);background:var(--paper);border-left:3px solid var(--primary);padding:5px 8px;border-radius:0 4px 4px 0;margin-bottom:6px}
+.rule-group-hint{font-size:10px;color:var(--muted);line-height:1.5;margin:0 0 7px 3px}
+.rule-row{padding:6px 0 7px;border-bottom:1px dashed var(--border)}
+.rule-row:last-child{border-bottom:none}
+.rule-row.rule-off{opacity:.42}
+.rule-main{display:flex;align-items:center;gap:7px;cursor:pointer}
+.rule-main input[type=checkbox]{width:14px;height:14px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+.rule-label{font-size:11.5px;font-weight:600;color:var(--ink);flex:1;line-height:1.35}
+.rule-num{width:64px;flex-shrink:0;font-family:'DM Mono',monospace;font-size:11px;padding:4px 6px;text-align:right}
+.rule-why{font-size:10px;color:var(--muted);line-height:1.5;margin-top:3px;padding-left:21px}
+.rule-changed{display:inline-block;font-size:9px;font-weight:700;color:var(--warn);background:var(--warn-soft);border:1px solid #fcd34d;border-radius:5px;padding:1px 6px;margin-top:4px;margin-left:21px}
+.rules-toolbar{display:flex;gap:5px;margin-bottom:10px}
+
+/* ── CARRY-FORWARD PANEL ── */
+.cf-source{background:var(--primary-soft);border:1px solid #a5c8ff;border-radius:7px;padding:7px 9px;font-size:10.5px;color:#0b4fbd;line-height:1.5;margin-bottom:9px}
+.cf-source b{color:#08306b}
+.cf-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px}
+.cf-row:last-child{border-bottom:none}
+.cf-name{font-weight:600;display:flex;align-items:center;gap:5px;min-width:0}
+.cf-name span.nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-verdict{font-size:9px;font-weight:700;border-radius:8px;padding:1px 6px;white-space:nowrap}
+.cf-shield{background:var(--success-soft);color:var(--success)}
+.cf-owes{background:var(--danger-soft);color:var(--danger)}
+.cf-even{background:#f1f5f9;color:var(--muted)}
+
 /* ── HISTORY ── */
 .hist-entry{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:7px;font-size:11px}
 .hist-entry-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
@@ -356,6 +384,31 @@ tr.is-sat .day-cell{color:var(--sat)}
       </div>
 
       <div style="margin-bottom:22px">
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary-soft);padding-bottom:6px;margin-bottom:12px">③b ⚖ Duty Rules — nothing is hidden</div>
+        <p>Every rule auto-fill obeys is listed in the <b>⚖ Duty Rules</b> panel, in plain English, with its current value. Rules that you have changed from the department default are flagged in <span style="background:#fef9c3;color:#9a6700;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700">amber</span>, and the section header shows how many you have changed.</p>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:9px">
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>Hard rules</b> are never broken — 3rd years get no mornings, night duty means the next day off, and auto-fill gives nobody two shifts in one day.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>Seniority numbers</b> are nudges, not blocks. A higher number means auto-fill tries harder to keep that batch away from that duty — but if nobody else is free, they still get it.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>↓ Rule sheet</b> downloads the whole list as a Word document you can print or send to the HOD.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>↺ Reset to defaults</b> puts every rule back the way the department set it.</div>
+        </div>
+        <p style="margin-top:9px">Change anything, then click <b>⚡ Auto-Fill</b> again to see the effect. Hover any auto-filled name in the table to read <b>why that person was chosen</b>.</p>
+      </div>
+
+      <div style="margin-bottom:22px">
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary-soft);padding-bottom:6px;margin-bottom:12px">③c 🔁 Carry-Forward — last month decides this month</div>
+        <p>The roster remembers previous months and uses them to even things out. This is the whole point of <b>💾 Save to History</b>.</p>
+        <ol style="padding-left:18px;display:flex;flex-direction:column;gap:7px;margin-top:9px">
+          <li>Finish a month and click <b>💾 Save to History</b> in the top bar.</li>
+          <li>Move to the next month and click <b>📋 Create Table</b>.</li>
+          <li>Open <b>🔁 Carry-Forward Balance</b>. It names the month being balanced against and lists each doctor's carried load.</li>
+          <li>Anyone marked <span style="background:#dcfce7;color:#1a7f37;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700">shielded</span> had a rough month and will be steered away from Saturday and pre-holiday nights. Anyone marked <span style="background:#fee2e2;color:#cf222e;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700">owes one</span> got off lightly and is first in line.</li>
+          <li>Click <b>⚡ Auto-Fill</b> — the balance is applied automatically.</li>
+        </ol>
+        <p style="margin-top:9px">By default only <b>the previous month</b> counts. To smooth over a longer run, raise <em>How many previous months to look back</em> in ⚖ Duty Rules; older months count less each step back. A month never balances against itself, so re-saving and re-running the same month is always safe.</p>
+      </div>
+
+      <div style="margin-bottom:22px">
         <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary-soft);padding-bottom:6px;margin-bottom:12px">④ DMS Mode</div>
         <p>Toggle <b>DMS: ON</b> in the top bar before assigning duties directed by the DMS. Those slots appear in <span style="background:#ede9fe;color:#8250df;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600">purple</span> on screen and are printed in <b>bold</b> in exported PDF and Word files so they are clearly marked.</p>
       </div>
@@ -474,9 +527,10 @@ tr.is-sat .day-cell{color:var(--sat)}
 A & U TIBBIA COLLEGE AND HOSPITAL
 KAROL BAGH, NEW DELHI – 110005</textarea>
     </div>
-    <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked><label>Morning duties: Sun & Holidays only</label></div>
-    <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked><label>Night duty → next day off</label></div>
-    <div class="checkbox-row"><input type="checkbox" id="y3CapRule"><label>3rd year: max 2 evenings + 2 nights per month</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked onchange="onLegacyToggle('morningSundayHoliday','morningSunHolOnly')"><label>Morning duties: Sun & Holidays only</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked onchange="onLegacyToggle('nightOffRule','nightOffNextDay')"><label>Night duty → next day off</label></div>
+    <div class="checkbox-row"><input type="checkbox" id="y3CapRule" onchange="onLegacyToggle('y3CapRule','y3Cap')"><label>3rd year: cap evenings + nights per month</label></div>
+    <div style="font-size:10px;color:var(--muted);margin:-2px 0 6px 21px">These three are shortcuts. Every other rule lives in <b>⚖ Duty Rules</b> below.</div>
     <div class="field" style="margin-top:6px">
       <label>Double Duty Allowed (can do evening+night same day)</label>
       <div id="doubleDutyPicker" class="dd-picker"><span style="color:var(--muted);font-size:11px;font-style:italic">Add members first (below) to pick names here.</span></div>
@@ -486,6 +540,24 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
       <button class="btn btn-primary btn-sm btn-full" onclick="initTable()">📋 Create Table</button>
       <button class="btn btn-warn btn-sm btn-full" onclick="autoFill()">⚡ Auto-Fill</button>
     </div>
+  </div>
+
+  <!-- RULES -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="rulesAccBtn">⚖ Duty Rules <span id="rulesChangedBadge" style="display:none;background:var(--warn-soft);color:var(--warn);border:1px solid #fcd34d;border-radius:10px;padding:1px 7px;font-size:9px;margin-left:5px"></span><span class="chev">▼</span></button>
+  <div class="acc-body" id="rulesAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">Every rule auto-fill follows, written out. Change any of them and re-run <b>⚡ Auto-Fill</b> to see the effect. Nothing here is hidden in the code.</div>
+    <div class="rules-toolbar">
+      <button class="btn btn-ghost btn-sm" style="flex:1;color:var(--ink);border-color:var(--border)" onclick="resetRules()">↺ Reset to defaults</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;color:var(--ink);border-color:var(--border)" onclick="exportRulesSheet()" title="Download a plain-English list of the active rules">↓ Rule sheet</button>
+    </div>
+    <div id="rulesList"></div>
+  </div>
+
+  <!-- CARRY FORWARD -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="cfAccBtn">🔁 Carry-Forward Balance <span class="chev">▼</span></button>
+  <div class="acc-body" id="cfAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">What last month's roster is doing to this month's auto-fill. Built from the months in <b>🗂 Saved Months</b>.</div>
+    <div id="cfSummary"></div>
   </div>
 
   <!-- MEMBERS -->
@@ -694,6 +766,217 @@ const INDIAN_HOLIDAYS={
   '2025-10-02':'Gandhi Jayanti','2025-10-23':'Diwali','2025-12-25':'Christmas'
 };
 
+// ── RULES ─────────────────────────────────────────────────────────────
+// Every rule the auto-fill obeys lives here. Anything the engine decides is
+// driven by one of these values — there are no other magic numbers in pick().
+// The Rules panel in the sidebar renders this object directly, so a rule that
+// exists here is a rule the user can see and change.
+const RULES_KEY='kaya_v5_rules';
+
+const RULE_DEFS=[
+  {group:'Hard rules — never broken',items:[
+    {k:'y3NoMorning',type:'bool',def:true,label:'3rd year never takes morning duty',
+     why:'Auto-fill and the manual dropdown both refuse a 3rd-year name in a morning slot.'},
+    {k:'morningSunHolOnly',type:'bool',def:true,label:'Morning duty only on Sundays & holidays',
+     why:'On ordinary weekdays the morning column is greyed out and left empty. Turn this off to roster a morning every day.'},
+    {k:'nightOffNextDay',type:'bool',def:true,label:'Night duty → next day off',
+     why:'Whoever did last night is excluded from every shift today.'},
+    {k:'noSameDayRepeat',type:'bool',def:true,label:'No two shifts on the same day (auto-fill)',
+     why:'Auto-fill never gives one person two shifts in a day. You can still do it by hand, and the Sunday and double-duty rules below are deliberate exceptions.'},
+  ]},
+  {group:'Capacity limits',items:[
+    {k:'y3Cap',type:'bool',def:false,label:'Cap 3rd-year duties per month',
+     why:'When on, a 3rd year is skipped once they hit the limits below.'},
+    {k:'y3CapEvenings',type:'num',def:2,min:0,max:31,label:'…max evenings for a 3rd year',dep:'y3Cap'},
+    {k:'y3CapNights',type:'num',def:2,min:0,max:31,label:'…max nights for a 3rd year',dep:'y3Cap'},
+  ]},
+  {group:'Pairing rules',items:[
+    {k:'sundayEveNightSame',type:'bool',def:true,label:'Sunday evening + night go to the same person',
+     why:'Both Sunday shifts are unpleasant, so they are concentrated on one person rather than spoiling two people’s Sundays.'},
+    {k:'doubleDutyFairShare',type:'bool',def:true,label:'Share double duties evenly among the allowed list',
+     why:'Someone on the Double Duty list only gets stacked with an evening if they are not already ahead of the others on that list.'},
+  ]},
+  {group:'Who gets the mornings',items:[
+    {k:'sunMorningY1First',type:'bool',def:true,label:'Sunday mornings: every 1st year gets one before anyone gets two',
+     why:'Overflow Sundays go to 2nd year, again one each before repeating.'},
+    {k:'holMorningY2First',type:'bool',def:true,label:'Holiday mornings: 2nd year first, then 1st year',
+     why:'Turn off to give 1st year holiday mornings first instead.'},
+  ]},
+  {group:'Seniority protection (higher = more protected)',hint:'These are nudges, not hard blocks. A high number means auto-fill avoids that batch for that duty unless nobody else is free.',items:[
+    {k:'badNightY3',type:'num',def:6.0,min:0,max:20,step:.5,label:'3rd year avoids bad nights'},
+    {k:'badNightY2',type:'num',def:2.5,min:0,max:20,step:.5,label:'2nd year avoids bad nights'},
+    {k:'satEveY3',type:'num',def:4.5,min:0,max:20,step:.5,label:'3rd year avoids Saturday evenings'},
+    {k:'satEveY2',type:'num',def:1.5,min:0,max:20,step:.5,label:'2nd year avoids Saturday evenings'},
+    {k:'goodNightY3',type:'num',def:-1.5,min:-20,max:20,step:.5,label:'3rd year preferred for ordinary nights',
+     why:'Negative means preferred. This is the counterweight that stops seniors from doing no nights at all.'},
+    {k:'goodNightY2',type:'num',def:-0.6,min:-20,max:20,step:.5,label:'2nd year preferred for ordinary nights'},
+  ]},
+  {group:'Rotation within a batch',hint:'Stops one unlucky person absorbing every bad shift while their batch-mates get none.',items:[
+    {k:'wBatchBadNight',type:'num',def:4.5,min:0,max:20,step:.5,label:'Rotate bad nights within the batch'},
+    {k:'wBatchEvening',type:'num',def:3.5,min:0,max:20,step:.5,label:'Rotate evenings within the batch'},
+    {k:'wSunNight',type:'num',def:3.5,min:0,max:20,step:.5,label:'Spread Sunday nights'},
+    {k:'wShiftCount',type:'num',def:2.5,min:0,max:20,step:.5,label:'Weight of plain shift count',
+     why:'How strongly auto-fill favours whoever has fewest of that shift so far.'},
+  ]},
+  {group:'How bad is each bad shift',hint:'Relative burden. Saturday nights happen every week, so they weigh more than the occasional pre-holiday night.',items:[
+    {k:'wSatNight',type:'num',def:4.0,min:0,max:20,step:.5,label:'Saturday night'},
+    {k:'wPreHolNight',type:'num',def:2.5,min:0,max:20,step:.5,label:'Night before a holiday'},
+    {k:'wSatEve',type:'num',def:3.0,min:0,max:20,step:.5,label:'Saturday evening'},
+    {k:'wSunEve',type:'num',def:2.0,min:0,max:20,step:.5,label:'Sunday evening'},
+  ]},
+  {group:'Senior rebalance',items:[
+    {k:'satEveRebalanceOn',type:'bool',def:true,label:'Pull seniors back in when they are too far ahead',
+     why:'If a 3rd year has collected clearly more good duties than their batch, their Saturday-evening protection is reduced until they have shared the load.'},
+    {k:'satEveRebalanceThreshold',type:'num',def:1.5,min:0,max:10,step:.5,label:'…how far ahead before it kicks in',dep:'satEveRebalanceOn'},
+    {k:'satEveRebalanceMul',type:'num',def:2.5,min:0,max:10,step:.5,label:'…how hard to pull them back',dep:'satEveRebalanceOn'},
+  ]},
+  {group:'Carry-forward from previous months',hint:'This is what makes next month compensate for last month. Saved months feed the balance; nothing else does.',items:[
+    {k:'cfEnabled',type:'bool',def:true,label:'Use previous months when balancing',
+     why:'Off means every month is rostered from scratch with no memory.'},
+    {k:'cfMonths',type:'num',def:1,min:1,max:12,label:'How many previous months to look back',dep:'cfEnabled',
+     why:'1 = only last month. Higher values smooth over a longer run but react more slowly.'},
+    {k:'cfDecay',type:'num',def:0.5,min:0,max:1,step:.05,label:'Weight given to each older month',dep:'cfEnabled',
+     why:'0.5 means the month before last counts half as much as last month. 1 = all looked-back months count equally.'},
+    {k:'cfBadNight',type:'num',def:2.0,min:0,max:10,step:.1,label:'Shielding from bad nights',dep:'cfEnabled',
+     why:'Higher = a bad night last month protects you harder this month.'},
+    {k:'cfGoodNight',type:'num',def:0.8,min:0,max:10,step:.1,label:'Claim on ordinary nights',dep:'cfEnabled'},
+    {k:'cfEvening',type:'num',def:0.9,min:0,max:10,step:.1,label:'Evening balancing',dep:'cfEnabled'},
+    {k:'cfMorning',type:'num',def:0.9,min:0,max:10,step:.1,label:'Morning balancing',dep:'cfEnabled'},
+  ]},
+];
+
+const RULE_INDEX={};RULE_DEFS.forEach(g=>g.items.forEach(it=>RULE_INDEX[it.k]=it));
+function defaultRules(){const o={};RULE_DEFS.forEach(g=>g.items.forEach(it=>o[it.k]=it.def));return o;}
+let RULES=defaultRules();
+
+function loadRules(){
+  try{
+    const d=localStorage.getItem(RULES_KEY);
+    RULES=defaultRules();
+    if(d)Object.assign(RULES,JSON.parse(d));
+  }catch(e){RULES=defaultRules();}
+  syncLegacyToggles();
+}
+function saveRules(){safeSet(RULES_KEY,JSON.stringify(RULES));}
+
+// Older drafts stored these three toggles alongside the roster. Adopt them once,
+// then leave them alone so the Rules panel stays authoritative.
+function migrateLegacySettings(settings){
+  if(!settings||localStorage.getItem(RULES_KEY))return;
+  if(settings.morning!==undefined)RULES.morningSunHolOnly=settings.morning!==false;
+  if(settings.nightOff!==undefined)RULES.nightOffNextDay=settings.nightOff!==false;
+  if(settings.y3Cap!==undefined)RULES.y3Cap=!!settings.y3Cap;
+  saveRules();syncLegacyToggles();renderRulesUI();
+}
+
+// Plain-English printout of the rules actually in force — something you can
+// hand to the HOD or pin up, rather than asking anyone to read the code.
+function exportRulesSheet(){
+  const d=defaultRules();
+  const fmt=v=>v===true?'ON':v===false?'OFF':String(v);
+  let html=`<html><head><meta charset="UTF-8"><title>Duty Rules</title><style>
+  body{font-family:"Times New Roman",serif;font-size:11pt;margin:40px}
+  h1{font-size:16pt;text-align:center;margin:0 0 2pt}
+  h2{font-size:11pt;text-align:center;font-weight:normal;margin:0 0 18pt;color:#444}
+  h3{font-size:11.5pt;background:#eef4fb;border-left:4px solid #1f6feb;padding:5pt 8pt;margin:16pt 0 6pt}
+  table{border-collapse:collapse;width:100%}
+  td{padding:4pt 6pt;border-bottom:0.5pt solid #ccc;vertical-align:top}
+  td.v{width:70pt;text-align:right;font-weight:bold;white-space:nowrap}
+  .why{color:#555;font-size:9.5pt;display:block;margin-top:2pt}
+  .chg{color:#9a6700;font-size:9pt;font-weight:bold}
+  </style></head><body>
+  <h1>Duty Roster — Rules in Force</h1>
+  <h2>${document.getElementById('hospital').value.split('\n')[0]||'Department of Kayachikitsa'} · generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</h2>`;
+  RULE_DEFS.forEach(g=>{
+    html+=`<h3>${escHtml(g.group)}</h3>`;
+    if(g.hint)html+=`<p style="color:#555;font-size:9.5pt;margin:0 0 6pt">${escHtml(g.hint)}</p>`;
+    html+='<table>';
+    g.items.forEach(it=>{
+      const off=it.dep&&!RULES[it.dep];
+      const changed=RULES[it.k]!==d[it.k];
+      html+=`<tr><td>${escHtml(it.label)}${it.why?`<span class="why">${escHtml(it.why)}</span>`:''}${changed?`<span class="chg">changed from default ${fmt(d[it.k])}</span>`:''}</td>
+      <td class="v">${off?'—':fmt(RULES[it.k])}</td></tr>`;
+    });
+    html+='</table>';
+  });
+  html+='</body></html>';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿',html],{type:'application/msword'}));
+  a.download='Duty_Rules.doc';a.click();
+  toast('Rule sheet downloaded ✓','success');
+}
+
+// The three original checkboxes in Settings stay as the quick controls for the
+// rules people change most often, so both places must agree.
+function syncLegacyToggles(){
+  const map={morningSundayHoliday:'morningSunHolOnly',nightOffRule:'nightOffNextDay',y3CapRule:'y3Cap'};
+  Object.entries(map).forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    if(el)el.checked=!!RULES[key];
+  });
+}
+function onLegacyToggle(id,key){
+  const el=document.getElementById(id);if(!el)return;
+  RULES[key]=el.checked;saveRules();renderRulesUI();
+  if(roster)render();
+}
+function setRule(k,v){
+  const def=RULE_INDEX[k];if(!def)return;
+  if(def.type==='num'){
+    let n=parseFloat(v);
+    if(isNaN(n))n=def.def;
+    if(def.min!=null)n=Math.max(def.min,n);
+    if(def.max!=null)n=Math.min(def.max,n);
+    RULES[k]=n;
+  } else RULES[k]=!!v;
+  saveRules();syncLegacyToggles();renderRulesUI();
+  if(roster&&(k==='morningSunHolOnly'))render();
+}
+function resetRules(){
+  if(!confirm('Reset every rule back to the department defaults?'))return;
+  RULES=defaultRules();saveRules();syncLegacyToggles();renderRulesUI();
+  if(roster)render();
+  toast('Rules reset to defaults','success');
+}
+function countChangedRules(){
+  const d=defaultRules();
+  return Object.keys(d).filter(k=>RULES[k]!==d[k]).length;
+}
+function renderRulesUI(){
+  const el=document.getElementById('rulesList');if(!el)return;
+  const d=defaultRules();
+  let html='';
+  RULE_DEFS.forEach(g=>{
+    html+=`<div class="rule-group"><div class="rule-group-title">${g.group}</div>`;
+    if(g.hint)html+=`<div class="rule-group-hint">${g.hint}</div>`;
+    g.items.forEach(it=>{
+      const val=RULES[it.k];
+      const changed=val!==d[it.k];
+      const off=it.dep&&!RULES[it.dep];
+      html+=`<div class="rule-row${off?' rule-off':''}">`;
+      if(it.type==='bool'){
+        html+=`<label class="rule-main"><input type="checkbox" ${val?'checked':''} ${off?'disabled':''} onchange="setRule('${it.k}',this.checked)"><span class="rule-label">${it.label}</span></label>`;
+      } else {
+        html+=`<div class="rule-main"><span class="rule-label">${it.label}</span>
+          <input class="rule-num" type="number" value="${val}" ${off?'disabled':''}
+            min="${it.min??''}" max="${it.max??''}" step="${it.step||1}"
+            onchange="setRule('${it.k}',this.value)"></div>`;
+      }
+      if(changed)html+=`<div class="rule-changed">changed — default was ${d[it.k]===true?'on':d[it.k]===false?'off':d[it.k]}</div>`;
+      if(it.why)html+=`<div class="rule-why">${it.why}</div>`;
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  });
+  el.innerHTML=html;
+  const badge=document.getElementById('rulesChangedBadge');
+  if(badge){
+    const n=countChangedRules();
+    badge.textContent=n?n+' changed':'';
+    badge.style.display=n?'inline-block':'none';
+  }
+}
+
 // ── SWAP ──────────────────────────────────────────────────────────────
 let swapMode=false,swapSrc=null;
 function toggleSwap(){
@@ -730,7 +1013,7 @@ function renderYearMgmt(){
     html+=`<div class="year-block">
       <div class="yb-head"><span class="tag ${cls}">${label} · ${members.length}</span></div>
       <div class="tags-wrap">
-        ${members.map(m=>`<span class="tag ${cls} tag-rm">${m}<button onclick="removeMember('${key}','${esc(m)}')">×</button></span>`).join('')}
+        ${members.map(m=>`<span class="tag ${cls} tag-rm">${escHtml(m)}<button onclick="removeMember('${key}','${esc(m)}')" aria-label="Remove ${escHtml(m)}">×</button></span>`).join('')}
         ${!members.length?`<span style="color:var(--muted);font-size:11px;font-style:italic">None — add below</span>`:''}
       </div>
       <div class="add-row">
@@ -752,7 +1035,7 @@ function renderDoubleDutyPicker(){
   if(!names.length){el.innerHTML='<span style="color:var(--muted);font-size:11px;font-style:italic">Add members first (below) to pick names here.</span>';return;}
   el.innerHTML=names.map(n=>{
     const on=selected.includes(n);
-    return `<button type="button" class="dd-pill${on?' on':''}" onclick="toggleDoubleDuty('${esc(n)}')" aria-pressed="${on}">${n}</button>`;
+    return `<button type="button" class="dd-pill${on?' on':''}" onclick="toggleDoubleDuty('${esc(n)}')" aria-pressed="${on}">${escHtml(n)}</button>`;
   }).join('');
 }
 function toggleDoubleDuty(name){
@@ -763,7 +1046,11 @@ function toggleDoubleDuty(name){
   hidden.value=selected.join(', ');
   renderDoubleDutyPicker();
 }
-function esc(s){return s.replace(/'/g,"\\'");}
+// esc() escapes a name for use inside a single-quoted inline onclick argument;
+// escHtml() escapes it for display as text. A name containing a quote or an
+// angle bracket used to break the markup and silently drop the row.
+function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function addMember(yr){
   const inp=document.getElementById('add_'+yr),name=inp.value.trim();
   if(!name)return toast('Enter a name');
@@ -798,7 +1085,7 @@ function loadMemberData(){const d=localStorage.getItem(KEY+'_members');if(d)memb
 function populateLeaveDocSel(){
   const sel=document.getElementById('leaveDocSel');if(!sel)return;
   const all=[...memberData.y3,...memberData.y2,...memberData.y1];
-  sel.innerHTML=all.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sel.innerHTML=all.map(s=>`<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
 }
 function addLeave(){
   const doc=document.getElementById('leaveDocSel').value;
@@ -839,7 +1126,7 @@ function renderLeaveUI(){
     }
     html+=`<div class="leave-entry">
       <div class="leave-entry-head">
-        <strong style="font-size:12px">${doc}</strong>
+        <strong style="font-size:12px">${escHtml(doc)}</strong>
         <button class="btn btn-danger btn-sm" onclick="clearDocLeaves('${esc(doc)}')">Clear all</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:3px">
@@ -883,10 +1170,14 @@ function initTable(){
     if(y===yr&&m===mo&&!hols.includes(day))hols.push(day);
   });
   roster={year:yr,month:mo,hospital:document.getElementById('hospital').value,data:[]};
+  // A night is "bad" if the next day is a day off. On the last day of the month
+  // that means checking next month's 1st against the national holiday list —
+  // the in-month holiday array can't answer for it.
+  const isNationalHol=dt=>!!INDIAN_HOLIDAYS[`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`];
   for(let d=1;d<=dim;d++){
     const dt=new Date(yr,mo-1,d);
     const nxt=new Date(yr,mo-1,d+1);
-    const nextDayHol=hols.includes(d+1)||nxt.getDay()===0;
+    const nextDayHol=(d<dim?hols.includes(d+1):isNationalHol(nxt))||nxt.getDay()===0;
     roster.data.push({
       date:`${String(d).padStart(2,'0')}/${String(mo).padStart(2,'0')}/${yr}`,
       dayName:dt.toLocaleDateString('en-US',{weekday:'long'}),
@@ -897,7 +1188,8 @@ function initTable(){
       mL:false,eL:false,nL:false    // locked flag
     });
   }
-  save();render();updateGCalList();toast('Table created ✓','success');
+  whyMap={};
+  save();render();updateGCalList();renderCarryForwardUI();toast('Table created ✓','success');
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────
@@ -909,7 +1201,7 @@ function render(){
   const total=data.length*3;
   const conflicts=data.filter(r=>{const a=[r.m,r.e,r.n].filter(Boolean);return new Set(a).size!==a.length;}).length;
   const locked=data.reduce((a,r)=>a+(r.mL?1:0)+(r.eL?1:0)+(r.nL?1:0),0);
-  const morningOnly=document.getElementById('morningSundayHoliday').checked;
+  const morningOnly=RULES.morningSunHolOnly;
 
   document.getElementById('statsBar').style.display='grid';
   document.getElementById('legend').style.display='flex';
@@ -974,14 +1266,18 @@ function chip(idx,sh,r,disabled){
 
   const dot=val?`<div class="dc-dot" style="background:${dotClass(val)}"></div>`:'';
   const lockIco=locked?'🔒 ':'';
-  const name=val?`${lockIco}${val}`:'<span style="font-size:10px">＋ Assign</span>';
+  const name=val?`${lockIco}${escHtml(val)}`:'<span style="font-size:10px">＋ Assign</span>';
+  // Auto-filled slots explain themselves on hover; manual ones have no reason
+  // to give beyond "someone chose this".
+  const why=(!isMan&&!isDMS&&val&&whyMap[`${idx}_${sh}`])?whyMap[`${idx}_${sh}`]:'';
+  const whyAttr=why?` title="Why ${escHtml(val)}? ${escHtml(why)}"`:'';
 
   const actionBtns=val&&!swapMode?`<div class="dc-actions">
     <button onclick="event.stopPropagation();lockSlot(${idx},'${sh}')" title="${locked?'Unlock':'Lock'}">${locked?'🔓':'🔒'}</button>
     <button onclick="event.stopPropagation();clearSlot(${idx},'${sh}')" title="Clear">✕</button>
   </div>`:'';
 
-  return `<div class="${cls}" id="dc_${idx}_${sh}" onclick="cellClick(${idx},'${sh}')" tabindex="0" role="button" aria-label="${val?val+' duty, click to edit':'Empty slot, click to assign'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cellClick(${idx},'${sh}')}">
+  return `<div class="${cls}" id="dc_${idx}_${sh}"${whyAttr} onclick="cellClick(${idx},'${sh}')" tabindex="0" role="button" aria-label="${val?escHtml(val)+' duty, click to edit':'Empty slot, click to assign'}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cellClick(${idx},'${sh}')}">
     ${dot}<span class="dc-name">${name}</span>${actionBtns}
   </div>`;
 }
@@ -1024,7 +1320,7 @@ function cellClick(idx,sh){
 
   // ── OPEN EDITOR ──
   closeAllEditors();
-  const morningOnly=document.getElementById('morningSundayHoliday').checked;
+  const morningOnly=RULES.morningSunHolOnly;
   if(morningOnly&&sh==='m'&&!r.isSun&&!r.isHol)return;
 
   const cellEl=document.getElementById('dc_'+idx+'_'+sh);
@@ -1035,16 +1331,19 @@ function cellClick(idx,sh){
   if(sh!=='e'&&r.e) takenToday.push(r.e);
   if(sh!=='n'&&r.n) takenToday.push(r.n);
   let opts='<option value="">— Clear slot —</option>';
+  const prevRow=data_prevNight(idx);
   students.forEach(s=>{
     const onLeave=isLeave(s,r.day);
-    const noMorn=sh==='m'&&y3.includes(s);
+    const noMorn=sh==='m'&&RULES.y3NoMorning&&y3.includes(s);
     const onDuty=takenToday.includes(s);
+    const postNight=RULES.nightOffNextDay&&prevRow&&prevRow.n===s;
     const dis=onLeave||noMorn; // only truly block leave and 3rd-yr mornings
     let suffix='';
     if(onLeave)suffix=' 🏥 On Leave';
     else if(noMorn)suffix=' (No AM)';
     else if(onDuty)suffix=' ⚡ Double duty';
-    opts+=`<option value="${s}" ${s===r[sh]?'selected':''} ${dis?'disabled':''}>${s}${suffix}</option>`;
+    else if(postNight)suffix=' ⚠ Post-night off';
+    opts+=`<option value="${escHtml(s)}" ${s===r[sh]?'selected':''} ${dis?'disabled':''}>${escHtml(s)}${suffix}</option>`;
   });
 
   const ed=document.createElement('div');
@@ -1071,12 +1370,17 @@ function cellClick(idx,sh){
   setTimeout(()=>document.getElementById('edSel')?.focus(),50);
 }
 
+// The row before this one, used for the "night duty → next day off" check.
+function data_prevNight(idx){return idx>0?roster.data[idx-1]:null;}
+
 function applyEditor(idx,sh){
   const val=document.getElementById('edSel')?.value??'';
   closeAllEditors();
   const r=roster.data[idx];
   if(val&&isLeave(val,r.day)){toast(val+' is on leave on '+r.date,'warn');return;}
-  if(val&&sh==='m'&&y3.includes(val)){toast('3rd year are not assigned morning duties','warn');return;}
+  if(val&&sh==='m'&&RULES.y3NoMorning&&y3.includes(val)){toast('3rd year are not assigned morning duties','warn');return;}
+  const pv=data_prevNight(idx);
+  if(val&&RULES.nightOffNextDay&&pv&&pv.n===val)toast('⚠ '+val+' was on night duty yesterday — assigned anyway','warn');
   // same-day duplicate: warn but allow (some people take double duties)
   const takenToday2=[];
   if(sh!=='m'&&r.m) takenToday2.push(r.m);
@@ -1103,12 +1407,16 @@ function toggleDMS(){
 }
 
 // ── AUTO-FILL ─────────────────────────────────────────────────────────
+// Records, per filled slot, a one-line reason shown as a tooltip on the chip.
+let whyMap={};
+
 function autoFill(){
   if(!roster)return toast('Create table first');
   parseLeaves();getStudents();
   if(!students.length)return toast('No members added','warn');
   const{data}=roster;
-  const nightOff=document.getElementById('nightOffRule').checked;
+  const nightOff=RULES.nightOffNextDay;
+  whyMap={};
 
   // clear auto-fills only (keep manual, DMS, locked)
   data.forEach(r=>{
@@ -1134,85 +1442,83 @@ function autoFill(){
     if(r.e&&r.n&&r.e===r.n)cnt[r.e].doubleDuties++;
   });
 
-  const morningOnly=document.getElementById('morningSundayHoliday').checked;
+  const morningOnly=RULES.morningSunHolOnly;
 
-  if(morningOnly){
+  // ── MORNINGS ──
+  // Sunday and holiday mornings follow their own one-each-before-repeating
+  // rules. When "Sun & Holidays only" is switched off, every remaining weekday
+  // morning is filled by the ordinary scorer further down.
+  {
     const sunRows=data.filter(r=>r.isSun&&!r.m&&!r.mL).sort((a,b)=>a.day-b.day);
     const holRows=data.filter(r=>r.isHol&&!r.isSun&&!r.m&&!r.mL).sort((a,b)=>a.day-b.day);
     const y1Pool=[...y1],y2Pool=[...y2];
+    const y3Morn=RULES.y3NoMorning?[]:[...y3];
 
-    const pickFromPool=(row,pool)=>{
+    const freeFor=(row,s)=>{
       const taken=[row.e,row.n].filter(Boolean);
       const prev=data[row.day-2];
-      const ok=s=>!isLeave(s,row.day)&&!taken.includes(s)&&!(nightOff&&prev&&prev.n===s);
-      const avail=pool.filter(ok);
+      if(isLeave(s,row.day))return false;
+      if(RULES.noSameDayRepeat&&taken.includes(s))return false;
+      if(nightOff&&prev&&prev.n===s)return false;
+      return true;
+    };
+    const award=(row,s,kind)=>{
+      row.m=s;cnt[s].total++;cnt[s].bad++;cnt[s].mornings++;
+      if(kind==='sun')cnt[s].sunMornings++;else cnt[s].holMornings++;
+      whyMap[`${row.day-1}_m`]=`${kind==='sun'?'Sunday':'Holiday'} morning — fewest so far in their batch`;
+    };
+    // fewest of the given counter, tie-broken by fewest mornings overall
+    const pickFromPool=(row,pool,counter)=>{
+      const avail=pool.filter(s=>freeFor(row,s));
       if(!avail.length)return null;
-      // pick whoever has fewest sunday mornings; tiebreak by total mornings
-      const minV=Math.min(...avail.map(s=>cnt[s].sunMornings));
-      return avail.filter(s=>cnt[s].sunMornings===minV).sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
+      const minV=Math.min(...avail.map(s=>cnt[s][counter]));
+      return avail.filter(s=>cnt[s][counter]===minV).sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
     };
 
-    // Sunday mornings:
-    // Rule: each 1st year gets exactly 1 sunday morning before anyone repeats.
-    // If sundays > y1.length, remaining go to 2nd year (one each before repeating).
-    // Nobody gets a 2nd sunday morning until everyone in their pool has had 1st.
+    // Sunday mornings: everyone in the primary batch gets one before anyone
+    // gets a second; overflow moves to the next batch on the same terms.
     sunRows.forEach(r=>{
-      // try 1st year first — but only if they haven't used their 1 sunday morning yet
-      const y1Available=y1Pool.filter(s=>{
-        const taken=[r.e,r.n].filter(Boolean);
-        const prev=data[r.day-2];
-        return !isLeave(s,r.day)&&!taken.includes(s)&&!(nightOff&&prev&&prev.n===s)&&cnt[s].sunMornings===0;
-      });
       let pick=null;
-      if(y1Available.length){
-        // among fresh 1st years, pick fewest total mornings
-        pick=y1Available.sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
+      if(RULES.sunMorningY1First){
+        const fresh=y1Pool.filter(s=>freeFor(r,s)&&cnt[s].sunMornings===0);
+        if(fresh.length)pick=fresh.sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
+        if(!pick)pick=pickFromPool(r,y2Pool,'sunMornings');
+        if(!pick)pick=pickFromPool(r,y1Pool,'sunMornings');
       } else {
-        // all 1st years had their 1 sunday morning — move to 2nd year
-        // among 2nd year, pick whoever has fewest sunday mornings (strictly fair)
-        pick=pickFromPool(r,y2Pool);
-        // if 2nd year exhausted too, fall back to 1st year again (2nd round)
-        if(!pick) pick=pickFromPool(r,y1Pool);
+        pick=pickFromPool(r,[...y1Pool,...y2Pool],'sunMornings');
       }
-      if(pick){
-        r.m=pick;cnt[pick].total++;cnt[pick].bad++;cnt[pick].mornings++;cnt[pick].sunMornings++;
-      }
+      if(!pick&&y3Morn.length)pick=pickFromPool(r,y3Morn,'sunMornings');
+      if(pick)award(r,pick,'sun');
     });
 
-    // Holiday mornings: 2nd year priority, then 1st year, strict fewest-first
-    const pickMorning=(row,primary,fallback)=>{
-      const taken=[row.e,row.n].filter(Boolean);
-      const prev=data[row.day-2];
-      const ok=s=>!isLeave(s,row.day)&&!taken.includes(s)&&!(nightOff&&prev&&prev.n===s);
-      const tryPool=pool=>{
-        const avail=pool.filter(ok);if(!avail.length)return false;
-        const minV=Math.min(...avail.map(s=>cnt[s].holMornings));
-        const pick=avail.filter(s=>cnt[s].holMornings===minV).sort((a,b)=>cnt[a].mornings-cnt[b].mornings)[0];
-        row.m=pick;cnt[pick].total++;cnt[pick].bad++;cnt[pick].mornings++;cnt[pick].holMornings++;
-        return true;
-      };
-      if(!tryPool(primary))tryPool(fallback);
-    };
-    holRows.forEach(r=>pickMorning(r,y2Pool,y1Pool));
+    // Holiday mornings: primary batch first, strictly fewest-first.
+    holRows.forEach(r=>{
+      const primary=RULES.holMorningY2First?y2Pool:y1Pool;
+      const fallback=RULES.holMorningY2First?y1Pool:y2Pool;
+      let pick=pickFromPool(r,primary,'holMornings')
+            || pickFromPool(r,fallback,'holMornings')
+            || (y3Morn.length?pickFromPool(r,y3Morn,'holMornings'):null);
+      if(pick)award(r,pick,'hol');
+    });
   }
 
   const yearBias=(s,q,isSatEve=false)=>{
-    // Saturday evening: 3rd year protected (prefer 1st then 2nd), unless good-duty rebalance kicks in
+    // Saturday evening: seniors protected, juniors take them first — unless the
+    // rebalance below decides a senior has had an easy enough run.
     if(isSatEve){
-      if(y3.includes(s))return 4.5;  // avoid 3rd year for sat evenings — reduced by satEveRebalance if they have too many good duties
-      if(y2.includes(s))return 1.5;  // slight preference for 1st year over 2nd
-      return 0;                       // 1st year takes sat evenings first
+      if(y3.includes(s))return RULES.satEveY3;
+      if(y2.includes(s))return RULES.satEveY2;
+      return 0;
     }
-    // Bad duties (bad nights): 3rd year strongly protected, 2nd year moderately, 1st year takes most
-    // Good duties (regular nights): 3rd year slightly preferred
+    // Bad duties: seniority shields. Good duties: seniority mildly prefers.
     if(q<0){
-      if(y3.includes(s))return 6.0;   // very strongly avoid giving 3rd year bad nights
-      if(y2.includes(s))return 2.5;   // moderately avoid 2nd year
-      return 0;                        // 1st year gets bad nights first
+      if(y3.includes(s))return RULES.badNightY3;
+      if(y2.includes(s))return RULES.badNightY2;
+      return 0;
     }
     if(q>0){
-      if(y3.includes(s))return -1.5;  // 3rd year preferred for good/regular nights
-      if(y2.includes(s))return -0.6;
+      if(y3.includes(s))return RULES.goodNightY3;
+      if(y2.includes(s))return RULES.goodNightY2;
       return 0;
     }
     return 0;
@@ -1229,10 +1535,10 @@ function autoFill(){
   // Saturday evening rebalance: if a 3rd year person is significantly ahead on good duties,
   // reduce their Saturday evening protection proportionally — they've had enough good duties, time to share the bad ones
   const satEveRebalance=(s,isSatEve)=>{
-    if(!isSatEve||!y3.includes(s))return 0;
+    if(!RULES.satEveRebalanceOn||!isSatEve||!y3.includes(s))return 0;
     const excess=goodDutyExcess(s);
-    if(excess<=1.5)return 0;          // comfortably ahead threshold — must be clearly ahead, not just by 1
-    return -(excess*2.5);             // stronger pull — the more good duties they have, the more eligible they become
+    if(excess<=RULES.satEveRebalanceThreshold)return 0;
+    return -(excess*RULES.satEveRebalanceMul);
   };
 
   // Within-batch rotation: track how many bad nights each person has THIS month
@@ -1243,13 +1549,13 @@ function autoFill(){
     const myBad=cnt[s].badNights;
     const batchMin=Math.min(...myBatch.map(m=>cnt[m].badNights));
     const aboveMin=myBad-batchMin; // how many more bad nights than the luckiest in your batch
-    return aboveMin*4.5; // strong penalty — rotate within batch before giving anyone a second bad night
+    return aboveMin*RULES.wBatchBadNight;
   };
 
-  // Load historical bad-night debt to balance across months
-  const histDebt=getHistoricalDebt();
+  // Carry-forward from previous saved months, excluding the month being built
+  const histDebt=getHistoricalDebt(monthKeyOf(roster));
 
-  const y3Cap=document.getElementById('y3CapRule')?.checked||false;
+  const y3Cap=RULES.y3Cap;
 
   const pick=(r,sh)=>{
     const q=dutyQuality(r,sh);
@@ -1257,14 +1563,14 @@ function autoFill(){
     const takenToday=[r.m,r.e,r.n].filter(Boolean);
     const cands=students.filter(s=>{
       if(isLeave(s,r.day))return false;
-      if(takenToday.includes(s))return false;
-      if(sh==='m'&&y3.includes(s))return false;
+      if(RULES.noSameDayRepeat&&takenToday.includes(s))return false;
+      if(sh==='m'&&RULES.y3NoMorning&&y3.includes(s))return false;
       if(nightOff&&prev&&prev.n===s)return false;
       // 3rd-year duty cap: when the toggle is on, skip any 3rd-year who has
       // already hit their limit for that shift type this month.
       if(y3Cap&&y3.includes(s)){
-        if(sh==='e'&&cnt[s].evenings>=2)return false;
-        if(sh==='n'&&cnt[s].nights>=2)return false;
+        if(sh==='e'&&cnt[s].evenings>=RULES.y3CapEvenings)return false;
+        if(sh==='n'&&cnt[s].nights>=RULES.y3CapNights)return false;
       }
       return true;
     });
@@ -1275,17 +1581,18 @@ function autoFill(){
       const isBad=sh==='n'&&q<0;
       const isBadEve=sh==='e'&&(r.isSat||r.isSun);
       const bA=isBad?cnt[a].badNights*3:0,bB=isBad?cnt[b].badNights*3:0;
-      // Historical cross-month balancing: people with more past bad nights are preferred for good nights, avoided for bad ones
+      // Cross-month balancing: a bad night last month shields you from one this
+      // month, and earns you a claim on the ordinary nights instead.
+      const cf=RULES.cfEnabled;
       const hA=histDebt[a]?.badNights||0, hB=histDebt[b]?.badNights||0;
-      const histFactor=isBad?2.0:-0.8; // stronger: past bad nights genuinely shield you next month
-      const hBias=sh==='n'?(hA-hB)*histFactor:0;
-      // Historical cross-month balancing for evenings and mornings
+      const histFactor=isBad?RULES.cfBadNight:-RULES.cfGoodNight;
+      const hBias=(cf&&sh==='n')?(hA-hB)*histFactor:0;
       const heA=histDebt[a]?.evenings||0, heB=histDebt[b]?.evenings||0;
-      const histEveBias=sh==='e'?(heA-heB)*0.9:0;
+      const histEveBias=(cf&&sh==='e')?(heA-heB)*RULES.cfEvening:0;
       const hmA=histDebt[a]?.mornings||0, hmB=histDebt[b]?.mornings||0;
-      const histMornBias=sh==='m'?(hmA-hmB)*0.9:0;
+      const histMornBias=(cf&&sh==='m')?(hmA-hmB)*RULES.cfMorning:0;
       // Saturday nights weighted heavier than pre-holiday nights (happen every week, more frequent burden)
-      const satW=4.0,preHolW=2.5,satEveW=3.0,sunEveW=2.0;
+      const satW=RULES.wSatNight,preHolW=RULES.wPreHolNight,satEveW=RULES.wSatEve,sunEveW=RULES.wSunEve;
       const satBA=isBad?cnt[a].satNights*satW:0, satBB=isBad?cnt[b].satNights*satW:0;
       const phBA=isBad?cnt[a].preHolNights*preHolW:0, phBB=isBad?cnt[b].preHolNights*preHolW:0;
       // Bad evening scoring: sat eve > sun eve (sun eve usually paired with sun night on same person anyway)
@@ -1298,20 +1605,47 @@ function autoFill(){
         const myBatch=y3.includes(s)?y3:y2.includes(s)?y2:y1;
         const myEve=cnt[s].evenings;
         const batchMin=Math.min(...myBatch.map(m=>cnt[m].evenings));
-        return (myEve-batchMin)*3.5;
+        return (myEve-batchMin)*RULES.wBatchEvening;
       };
       const ebA=sh==='e'?batchEveningBias(a):0, ebB=sh==='e'?batchEveningBias(b):0;
       // Sunday nights: separate spread — no one gets a 2nd before everyone has 1st
       const isSunNight=sh==='n'&&r.isSun;
-      const snA=isSunNight?cnt[a].sunNights*3.5:0,snB=isSunNight?cnt[b].sunNights*3.5:0;
+      const snA=isSunNight?cnt[a].sunNights*RULES.wSunNight:0,snB=isSunNight?cnt[b].sunNights*RULES.wSunNight:0;
       const srA=satEveRebalance(a,isBadEve&&r.isSat), srB=satEveRebalance(b,isBadEve&&r.isSat);
       const qA=cnt[a].bad*0.4-cnt[a].good*0.25,qB=cnt[b].bad*0.4-cnt[b].good*0.25;
-      return (sA*2.5+satBA+phBA+bbA+snA+ebA+beA+srA+qA+yearBias(a,q)+hBias+histEveBias+histMornBias)-(sB*2.5+satBB+phBB+bbB+snB+ebB+beB+srB+qB+yearBias(b,q));
+      const W=RULES.wShiftCount;
+      return (sA*W+satBA+phBA+bbA+snA+ebA+beA+srA+qA+yearBias(a,q)+hBias+histEveBias+histMornBias)-(sB*W+satBB+phBB+bbB+snB+ebB+beB+srB+qB+yearBias(b,q));
     });
     return cands[0];
   };
 
-  data.forEach(r=>{
+  // Plain-English reason for why the scorer landed on this person.
+  const explain=(r,sh,doc)=>{
+    const q=dutyQuality(r,sh);
+    const bits=[];
+    if(sh==='n')bits.push(q<0?(r.isSat?'Saturday night':'night before a holiday'):'ordinary night');
+    if(sh==='e')bits.push(r.isSat?'Saturday evening':r.isSun?'Sunday evening':r.isHol?'holiday evening':'evening');
+    const band=y3.includes(doc)?'3rd yr':y2.includes(doc)?'2nd yr':'1st yr';
+    bits.push(band);
+    const past=histDebt[doc];
+    if(RULES.cfEnabled&&past){
+      if(sh==='n'&&past.badNights>0)bits.push(q<0?`carried ${round1(past.badNights)} bad nights — normally shielded`:`owed an easy night (${round1(past.badNights)} bad last month)`);
+      if(sh==='e'&&past.evenings>0)bits.push(`${round1(past.evenings)} evenings carried forward`);
+    }
+    bits.push(`now on ${cnt[doc][sh==='n'?'nights':sh==='e'?'evenings':'mornings']} this month`);
+    return bits.join(' · ');
+  };
+
+  // A 3rd year at their cap must not slip through the Sunday / double-duty
+  // shortcuts, which bypass pick() and therefore bypass the cap check.
+  const withinCap=(doc,sh)=>{
+    if(!y3Cap||!y3.includes(doc))return true;
+    if(sh==='e')return cnt[doc].evenings<RULES.y3CapEvenings;
+    if(sh==='n')return cnt[doc].nights<RULES.y3CapNights;
+    return true;
+  };
+
+  data.forEach((r,idx)=>{
     if(!r.n&&!r.nL){
       const c=pick(r,'n');
       if(c){
@@ -1322,6 +1656,7 @@ function autoFill(){
         if(r.isSun)cnt[c].sunNights++;
         const q=dutyQuality(r,'n');
         if(q>0)cnt[c].good++;else if(q<0)cnt[c].bad++;else cnt[c].neutral++;
+        whyMap[`${idx}_n`]=explain(r,'n',c);
       }
     }
     if(!r.e&&!r.eL){
@@ -1329,18 +1664,23 @@ function autoFill(){
       const dblRaw=document.getElementById('doubleDutyList')?.value||'';
       const dblAllowed=dblRaw.split(',').map(s=>s.trim()).filter(Boolean);
 
-      let c=null;
-      if(r.isSun&&r.n&&!isLeave(r.n,r.day)){
-        // Sunday: same person takes evening+night (both are bad, concentrate on one)
-        c=r.n;
-      } else if(r.n&&dblAllowed.includes(r.n)&&!isLeave(r.n,r.day)){
-        // Night person is on double-duty list — but only stack them if that stays
-        // fair relative to everyone else on the list, so the load doesn't pile
-        // onto whoever happens to draw night most often.
+      let c=null,reason='';
+      const nightDoc=r.n;
+      const nightFree=nightDoc&&!isLeave(nightDoc,r.day)&&withinCap(nightDoc,'e');
+
+      if(RULES.sundayEveNightSame&&r.isSun&&nightFree){
+        // Sunday: same person takes evening+night — both shifts are unpleasant,
+        // so one person loses their Sunday instead of two.
+        c=nightDoc;reason='Sunday evening paired with the same person’s night duty';
+      } else if(nightFree&&dblAllowed.includes(nightDoc)){
+        // Night person is on the double-duty list — stack them only if that keeps
+        // them level with the rest of the list, so the load doesn't pile onto
+        // whoever happens to draw night most often.
         const dblCounts=dblAllowed.filter(n=>cnt[n]).map(n=>cnt[n].doubleDuties);
         const minDbl=dblCounts.length?Math.min(...dblCounts):0;
-        if(cnt[r.n].doubleDuties<=minDbl){c=r.n;}
-        else{c=pick(r,'e');}
+        if(!RULES.doubleDutyFairShare||cnt[nightDoc].doubleDuties<=minDbl){
+          c=nightDoc;reason='double duty — on the allowed list and level with the others';
+        } else c=pick(r,'e');
       } else {
         c=pick(r,'e');
       }
@@ -1352,11 +1692,24 @@ function autoFill(){
         if(r.isSun)cnt[c].sunEvenings++;
         const q=dutyQuality(r,'e');
         if(q>0)cnt[c].good++;else if(q<0)cnt[c].bad++;else cnt[c].neutral++;
+        whyMap[`${idx}_e`]=reason||explain(r,'e',c);
+      }
+    }
+    // Weekday mornings — only when the Sun/Holiday-only restriction is lifted.
+    // Sunday and holiday mornings were already handled by their own rules above.
+    if(!morningOnly&&!r.m&&!r.mL&&!r.isSun&&!r.isHol){
+      const c=pick(r,'m');
+      if(c){
+        r.m=c;r.mM=false;r.mD=false;
+        cnt[c].total++;cnt[c].mornings++;cnt[c].bad++;
+        whyMap[`${idx}_m`]=explain(r,'m',c);
       }
     }
   });
 
-  save();render();calcDistNow();toast('Auto-fill complete ✓','success');
+  save();render();calcDistNow();renderCarryForwardUI();
+  const empties=data.reduce((a,r)=>a+((!r.n?1:0)+(!r.e?1:0)),0);
+  toast(empties?`Auto-fill done — ${empties} slot(s) left empty, no one was eligible`:'Auto-fill complete ✓',empties?'warn':'success');
 }
 
 // ── DISTRIBUTION ──────────────────────────────────────────────────────
@@ -1648,7 +2001,9 @@ function exportExcel(){
 // ── SAVE / LOAD ───────────────────────────────────────────────────────
 function save(){
   if(!roster)return;
-  safeSet(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,morning:document.getElementById('morningSundayHoliday').checked,nightOff:document.getElementById('nightOffRule').checked,y3Cap:document.getElementById('y3CapRule').checked,doubleDuty:document.getElementById('doubleDutyList').value}}));
+  // Rules live in their own store (RULES_KEY) and are deliberately NOT part of
+  // the draft — loading an old draft must not quietly revert rule changes.
+  safeSet(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,doubleDuty:document.getElementById('doubleDutyList').value}}));
   document.getElementById('loadBtn').style.display='inline-flex';
   document.getElementById('saveHistBtn').style.display='inline-flex';
   document.getElementById('snapBtn').style.display='inline-flex';
@@ -1656,9 +2011,17 @@ function save(){
 function loadDraft(){
   const d=localStorage.getItem(KEY);if(!d)return;
   const p=JSON.parse(d);
-  if(p.settings){document.getElementById('holidays').value=p.settings.holidays||'';document.getElementById('leaves').value=p.settings.leaves||'';document.getElementById('hospital').value=p.settings.hospital||'';document.getElementById('morningSundayHoliday').checked=p.settings.morning!==false;document.getElementById('nightOffRule').checked=p.settings.nightOff!==false;document.getElementById('y3CapRule').checked=p.settings.y3Cap||false;document.getElementById('doubleDutyList').value=p.settings.doubleDuty||'';renderDoubleDutyPicker();}
+  if(p.settings){
+    document.getElementById('holidays').value=p.settings.holidays||'';
+    document.getElementById('leaves').value=p.settings.leaves||'';
+    document.getElementById('hospital').value=p.settings.hospital||'';
+    document.getElementById('doubleDutyList').value=p.settings.doubleDuty||'';
+    renderDoubleDutyPicker();
+    // Drafts written before the Rules panel existed carried these three inline.
+    migrateLegacySettings(p.settings);
+  }
   if(p.leaveMap)leaveMap=p.leaveMap;else parseLeaves();
-  roster=p.roster;getStudents();renderLeaveUI();render();updateGCalList();
+  roster=p.roster;getStudents();renderLeaveUI();render();updateGCalList();renderCarryForwardUI();
   toast('Draft loaded ✓','success');
 }
 function clearDraft(){if(confirm('Clear all roster data?')){localStorage.removeItem(KEY);location.reload();}}
@@ -1666,33 +2029,29 @@ function clearDraft(){if(confirm('Clear all roster data?')){localStorage.removeI
 // ── HISTORY ──────────────────────────────────────────────────────────
 const HIST_KEY='kaya_v5_history';
 
+function monthKeyOf(r){return r?`${r.year}-${String(r.month).padStart(2,'0')}`:null;}
+function round1(n){return Math.round(n*10)/10;}
+
 function saveToHistory(){
   if(!roster)return toast('No roster to save');
-  const{data,year,month}=roster;
+  const{year,month}=roster;
   const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const key=`${year}-${String(month).padStart(2,'0')}`;
+  const key=monthKeyOf(roster);
 
-  // compute distribution from current roster
+  // Same counter used for the live Distribution panel, so what you saw on
+  // screen is exactly what gets carried into next month. It also canonicalises
+  // names and keeps doctors who have since left the department, which the old
+  // members-only loop silently dropped.
   getStudents();
-  const cnt={};
-  students.forEach(s=>cnt[s]={nights:0,evenings:0,mornings:0,badNights:0,total:0,doubleDuties:0});
-  data.forEach(r=>{
-    ['m','e','n'].forEach(sh=>{
-      const doc=r[sh];if(!doc||!cnt[doc])return;
-      cnt[doc].total++;
-      if(sh==='m')cnt[doc].mornings++;
-      if(sh==='e')cnt[doc].evenings++;
-      if(sh==='n'){cnt[doc].nights++;if(r.isSat||r.nextDayHol)cnt[doc].badNights++;}
-    });
-    if(r.e&&r.n&&r.e===r.n&&cnt[r.e])cnt[r.e].doubleDuties++;
-  });
+  const cnt=computeDistFromRoster(roster.data);
 
   const hist=loadHistory();
+  const existed=!!hist[key];
   // store full roster snapshot inside history entry so it can be loaded back
   hist[key]={label:mn,year,month,dist:cnt,savedAt:Date.now(),rosterSnap:JSON.parse(JSON.stringify(roster)),leaveSnap:JSON.parse(JSON.stringify(leaveMap))};
   safeSet(HIST_KEY,JSON.stringify(hist));
-  renderHistoryUI();
-  toast('Roster saved to history ✓','success');
+  renderHistoryUI();renderCarryForwardUI();
+  toast(existed?`${mn} updated in history ✓`:`${mn} saved to history ✓`,'success');
 }
 
 function loadHistory(){
@@ -1703,7 +2062,7 @@ function deleteHistory(key){
   if(!confirm('Remove this month from history?'))return;
   const hist=loadHistory();delete hist[key];
   safeSet(HIST_KEY,JSON.stringify(hist));
-  renderHistoryUI();toast('Removed from history','success');
+  renderHistoryUI();renderCarryForwardUI();toast('Removed from history','success');
 }
 
 function loadFromHistory(key){
@@ -1711,13 +2070,13 @@ function loadFromHistory(key){
   const h=hist[key];
   if(!h||!h.rosterSnap){return toast('No full roster saved in this entry — re-save with 💾 Save to History','warn');}
   if(!confirm(`Load the roster for ${h.label}?\n\nThis will replace your current roster. Save a snapshot first if you want to keep it.`))return;
-  roster=h.rosterSnap;
+  roster=h.rosterSnap;whyMap={};
   if(h.leaveSnap)leaveMap=h.leaveSnap;
   // restore settings inputs
   if(roster.hospital)document.getElementById('hospital').value=roster.hospital;
   const mv=`${roster.year}-${String(roster.month).padStart(2,'0')}`;
   document.getElementById('month').value=mv;
-  getStudents();renderLeaveUI();render();updateGCalList();
+  getStudents();renderLeaveUI();render();updateGCalList();renderCarryForwardUI();
   save();
   toast(`Loaded ${h.label} from history ✓`,'success');
 }
@@ -1751,20 +2110,95 @@ function renderHistoryUI(){
   el.innerHTML=html;
 }
 
-// Build cumulative "bad duty debt" from history, to be used in autoFill scoring
-function getHistoricalDebt(){
+// Which saved months feed the balance for the month being built.
+// Only months strictly BEFORE it count, most recent first, capped at the
+// look-back set in the Rules panel. The month being edited never balances
+// against itself — that was the flaw in the old all-time sum, which also meant
+// debt accumulated forever and eventually froze the rotation in place.
+function carryForwardSources(excludeKey){
   const hist=loadHistory();
+  const cur=excludeKey||monthKeyOf(roster);
+  let keys=Object.keys(hist).sort().reverse();
+  if(cur)keys=keys.filter(k=>k<cur);
+  return keys.slice(0,Math.max(1,RULES.cfMonths)).map((k,i)=>({
+    key:k,
+    label:hist[k].label||k,
+    weight:Math.pow(RULES.cfDecay,i),   // newest month at full weight
+    dist:hist[k].dist||{}
+  }));
+}
+
+// Weighted "duty debt" carried into the month being built.
+function getHistoricalDebt(excludeKey){
   const debt={};
-  Object.values(hist).forEach(h=>{
-    Object.entries(h.dist||{}).forEach(([name,d])=>{
-      if(!debt[name])debt[name]={badNights:0,nights:0,evenings:0,mornings:0};
-      debt[name].badNights+=d.badNights||0;
-      debt[name].nights+=d.nights||0;
-      debt[name].evenings+=d.evenings||0;
-      debt[name].mornings+=d.mornings||0;
+  if(!RULES.cfEnabled)return debt;
+  // Names are matched to the current roll so a stray space or case difference
+  // in an old month still lands on the right person.
+  const canonMap={};
+  [...y3,...y2,...y1].forEach(s=>canonMap[s.trim().toLowerCase()]=s);
+  const canon=s=>canonMap[s.trim().toLowerCase()]||s.trim();
+
+  carryForwardSources(excludeKey).forEach(src=>{
+    Object.entries(src.dist).forEach(([raw,d])=>{
+      const name=canon(raw);
+      if(!debt[name])debt[name]={badNights:0,nights:0,evenings:0,mornings:0,months:0};
+      debt[name].badNights+=(d.badNights||0)*src.weight;
+      debt[name].nights   +=(d.nights   ||0)*src.weight;
+      debt[name].evenings +=(d.evenings ||0)*src.weight;
+      debt[name].mornings +=(d.mornings ||0)*src.weight;
+      debt[name].months++;
     });
   });
   return debt;
+}
+
+// ── CARRY-FORWARD PANEL ──────────────────────────────────────────────
+function renderCarryForwardUI(){
+  const el=document.getElementById('cfSummary');if(!el)return;
+  getStudents();
+  if(!RULES.cfEnabled){
+    el.innerHTML=`<div style="font-size:11px;color:var(--warn);background:var(--warn-soft);border:1px solid #fcd34d;border-radius:7px;padding:8px 10px;line-height:1.5">Carry-forward is switched <b>off</b> in ⚖ Duty Rules, so this month is being built with no memory of previous months.</div>`;
+    return;
+  }
+  const srcs=carryForwardSources();
+  if(!srcs.length){
+    el.innerHTML=`<div style="font-size:11px;color:var(--muted);line-height:1.55;font-style:italic">No earlier month saved yet. Finish a roster, click <b>💾 Save to History</b>, then move to the next month — from then on this panel shows who is owed an easier month.</div>`;
+    return;
+  }
+  const debt=getHistoricalDebt();
+  const names=[...y3,...y2,...y1].filter(n=>debt[n]);
+  // Compare each person to their own batch: fairness is judged within a year
+  // group, since the batches carry deliberately different loads.
+  const batchOf=n=>y3.includes(n)?'y3':y2.includes(n)?'y2':'y1';
+  const avg={};
+  ['y3','y2','y1'].forEach(b=>{
+    const mem=(b==='y3'?y3:b==='y2'?y2:y1).filter(n=>debt[n]);
+    avg[b]=mem.length?mem.reduce((a,n)=>a+debt[n].badNights,0)/mem.length:0;
+  });
+
+  let html=`<div class="cf-source">Balancing against <b>${srcs.map(s=>s.label).join('</b>, <b>')}</b>${srcs.length>1?` — the older month${srcs.length>2?'s count':' counts'} ${Math.round(RULES.cfDecay*100)}% as much each step back.`:'.'}</div>`;
+
+  if(!names.length){
+    html+=`<div style="font-size:11px;color:var(--muted);font-style:italic">None of the saved names match your current member list — check spellings in 🎓 Members.</div>`;
+    el.innerHTML=html;return;
+  }
+
+  html+=`<div style="font-size:10px;color:var(--muted);margin-bottom:5px">Carried in from those months — <b>shielded</b> means auto-fill will steer bad nights away from them this month.</div>`;
+  names.sort((a,b)=>debt[b].badNights-debt[a].badNights).forEach(n=>{
+    const d=debt[n];
+    const delta=d.badNights-avg[batchOf(n)];
+    const verdict=delta>=0.5?['cf-shield','shielded']:delta<=-0.5?['cf-owes','owes one']:['cf-even','even'];
+    html+=`<div class="cf-row">
+      <span class="cf-name"><span class="ldot" style="background:${dotClass(n)}"></span><span class="nm">${n}</span></span>
+      <div class="dpills">
+        <span class="dp dp-n" title="Bad nights carried forward">🌙✗${round1(d.badNights)}</span>
+        <span class="dp dp-e" title="Evenings carried forward">🌆${round1(d.evenings)}</span>
+        <span class="dp dp-m" title="Mornings carried forward">🌅${round1(d.mornings)}</span>
+        <span class="cf-verdict ${verdict[0]}">${verdict[1]}</span>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html;
 }
 
 // ── SNAPSHOTS ────────────────────────────────────────────────────────
@@ -1812,11 +2246,11 @@ function restoreSnap(id){
   const snaps=loadSnaps();
   const s=snaps[id];if(!s)return;
   if(!confirm(`Restore snapshot:\n"${s.label}"?\n\nCurrent roster will be replaced. Save another snapshot first if needed.`))return;
-  roster=s.rosterSnap;
+  roster=s.rosterSnap;whyMap={};
   if(s.leaveSnap)leaveMap=s.leaveSnap;
   if(roster.hospital)document.getElementById('hospital').value=roster.hospital;
   document.getElementById('month').value=`${roster.year}-${String(roster.month).padStart(2,'0')}`;
-  getStudents();renderLeaveUI();render();updateGCalList();
+  getStudents();renderLeaveUI();render();updateGCalList();renderCarryForwardUI();
   save();
   toast(`Restored: "${s.label}" ✓`,'success');
 }
@@ -1870,7 +2304,7 @@ function toast(msg,type='danger'){
 // Update a single duty chip without redrawing the whole table
 function renderCell(idx,sh){
   const r=roster.data[idx];
-  const morningOnly=document.getElementById('morningSundayHoliday').checked;
+  const morningOnly=RULES.morningSunHolOnly;
   const disabled=morningOnly&&sh==='m'&&!r.isSun&&!r.isHol;
   const cellEl=document.getElementById('dc_'+idx+'_'+sh);
   if(cellEl) cellEl.outerHTML=chip(idx,sh,r,disabled);
@@ -2191,15 +2625,21 @@ function applyParsedRowsToRoster(rows){
 // ── INIT ──────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
   if(!storageAvailable())showStorageBanner();
-  loadMemberData();renderYearMgmt();renderHistoryUI();renderSnapsUI();renderWordFilesUI();
+  loadRules();
+  loadMemberData();renderYearMgmt();renderRulesUI();renderHistoryUI();renderSnapsUI();renderWordFilesUI();
   document.getElementById('month').value=new Date().toISOString().slice(0,7);
   if(localStorage.getItem(KEY)){
     document.getElementById('loadBtn').style.display='inline-flex';
     document.getElementById('saveHistBtn').style.display='inline-flex';
     document.getElementById('snapBtn').style.display='inline-flex';
-    try{const p=JSON.parse(localStorage.getItem(KEY));if(p.leaveMap)leaveMap=p.leaveMap;}catch(e){}
+    try{
+      const p=JSON.parse(localStorage.getItem(KEY));
+      if(p.leaveMap)leaveMap=p.leaveMap;
+      if(p.settings)migrateLegacySettings(p.settings);
+    }catch(e){}
     renderLeaveUI();
   }
+  getStudents();renderCarryForwardUI();
   // On phones the sidebar stacks above the roster table, so leaving several
   // sections open by default would force a long scroll before reaching it.
   // Collapse everything to headers-only on first load; nothing is hidden,
