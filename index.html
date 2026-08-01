@@ -372,6 +372,8 @@ tr.is-sat .day-cell{color:var(--sat)}
         <button onclick="closeMenus();window.print()">🖨 Print roster</button>
         <div class="menu-sep"></div>
         <button onclick="closeMenus();openPastePanel()">📋 Paste duties in from Word</button>
+        <div class="menu-sep"></div>
+        <button onclick="closeMenus();makeBackup()">💾 Back up all data (one file)</button>
       </div>
     </div>
     <span style="color:#444c56;font-size:14px">|</span>
@@ -507,8 +509,17 @@ tr.is-sat .day-cell{color:var(--sat)}
       </div>
 
       <div style="margin-bottom:22px">
-        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary-soft);padding-bottom:6px;margin-bottom:12px">⑨ Saving &amp; Loading</div>
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary-soft);padding-bottom:6px;margin-bottom:12px">⑨ Saving, Backup &amp; Loading</div>
         <p>Everything auto-saves in your browser as you work. If you close and reopen the file, click <b>↩ Load Draft</b> in the top bar to restore your last session. Click <b>Reset</b> only if you want to start completely fresh — this cannot be undone.</p>
+        <div style="background:#fef9c3;border:1px solid #fcd34d;border-radius:8px;padding:11px 14px;margin-top:10px">
+          <b>⚠ Important — back up.</b> Your members, saved months, snapshots and rules live in <b>this browser only</b>. Clearing browsing data, resetting the browser, or moving to another computer loses all of it. The app file being on GitHub does <em>not</em> protect your data — GitHub has the program, not your rosters.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:9px">
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>💾 Backup</b> (sidebar, or the Export menu) downloads everything as one small <code style="background:#fff;padding:1px 5px;border-radius:4px">.json</code> file — a whole year is about 140 KB.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>📂 Restore</b> loads that file back. It shows you what the file contains and what it will replace before doing anything.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px"><b>Where to keep it:</b> save it into your <b>OneDrive</b> folder, next to the app. It then syncs by itself, so restoring on another computer brings your whole history with it.</div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:10px 14px">The panel tells you how long since your last backup and warns after 30 days. A good habit is to back up right after <b>💾 Save to History</b> each month.</div>
+        </div>
       </div>
 
       <div style="background:#f6f8fa;border:1px solid var(--border);border-radius:10px;padding:14px 16px">
@@ -556,6 +567,18 @@ tr.is-sat .day-cell{color:var(--sat)}
     <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">Upload a previously edited Word roster file to store it here. Download it anytime.</div>
     <button class="btn btn-primary btn-sm btn-full" style="margin-bottom:10px" onclick="openUploadWordModal()">⬆ Upload Previous Month Word File</button>
     <div id="wordFileList"><div style="color:var(--muted);font-size:11px;font-style:italic">No files uploaded yet.</div></div>
+  </div>
+
+  <!-- BACKUP -->
+  <button class="acc-btn" onclick="toggleAcc(this)" id="backupAccBtn">💾 Backup &amp; Restore <span class="chev">▼</span></button>
+  <div class="acc-body" id="backupAccBody">
+    <div style="color:var(--muted);font-size:11px;margin-bottom:9px;line-height:1.5">Everything is stored in <b>this browser only</b>. One file holds the lot — keep it in your OneDrive folder and it survives a browser reset and opens on your other computer.</div>
+    <div id="backupStatus" style="background:var(--paper);border:1px solid var(--border);border-radius:7px;padding:8px 10px;margin-bottom:9px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <button class="btn btn-success btn-sm btn-full" onclick="makeBackup()" title="Download everything as one file">💾 Backup</button>
+      <button class="btn btn-primary btn-sm btn-full" onclick="pickRestoreFile()" title="Load a backup file back in">📂 Restore</button>
+    </div>
+    <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none" onchange="handleRestoreFile(event)">
   </div>
 
   <!-- SNAPSHOTS -->
@@ -2544,7 +2567,7 @@ function saveToHistory(){
   // store full roster snapshot inside history entry so it can be loaded back
   hist[key]={label:mn,year,month,dist:cnt,savedAt:Date.now(),rosterSnap:JSON.parse(JSON.stringify(roster)),leaveSnap:JSON.parse(JSON.stringify(leaveMap))};
   safeSet(HIST_KEY,JSON.stringify(hist));
-  renderHistoryUI();renderCarryForwardUI();
+  renderHistoryUI();renderCarryForwardUI();renderBackupUI();
   toast(existed?`${mn} updated in history ✓`:`${mn} saved to history ✓`,'success');
 }
 
@@ -2694,6 +2717,98 @@ function renderCarryForwardUI(){
       </div>
     </div>`;
   });
+  el.innerHTML=html;
+}
+
+// ── BACKUP / RESTORE ─────────────────────────────────────────────────
+// Everything lives in this browser's localStorage, which is not a safe place
+// to keep a year of rosters: clearing site data, a browser reset or a new
+// machine loses the lot. One JSON file holds all of it. Kept in the OneDrive
+// folder next to the app, it doubles as sync between computers.
+const LAST_BACKUP_KEY='kaya_v5_last_backup';
+function backupKeys(){return [KEY,KEY+'_members',HIST_KEY,SNAP_KEY,WORD_FILES_KEY,RULES_KEY,PROFILE_KEY];}
+
+function backupSummary(data){
+  const s={months:0,members:0,snapshots:0,wordFiles:0};
+  try{s.months=Object.keys(JSON.parse(data[HIST_KEY]||'{}')).length;}catch(e){}
+  try{const m=JSON.parse(data[KEY+'_members']||'{}');s.members=(m.y3||[]).length+(m.y2||[]).length+(m.y1||[]).length;}catch(e){}
+  try{s.snapshots=Object.keys(JSON.parse(data[SNAP_KEY]||'{}')).length;}catch(e){}
+  try{s.wordFiles=Object.keys(JSON.parse(data[WORD_FILES_KEY]||'{}')).length;}catch(e){}
+  return s;
+}
+function summaryText(s){
+  const bits=[];
+  bits.push(`${s.members} member${s.members===1?'':'s'}`);
+  bits.push(`${s.months} saved month${s.months===1?'':'s'}`);
+  if(s.snapshots)bits.push(`${s.snapshots} snapshot${s.snapshots===1?'':'s'}`);
+  if(s.wordFiles)bits.push(`${s.wordFiles} Word file${s.wordFiles===1?'':'s'}`);
+  return bits.join(' · ');
+}
+
+function makeBackup(){
+  const data={};
+  backupKeys().forEach(k=>{const v=localStorage.getItem(k);if(v!==null)data[k]=v;});
+  if(!Object.keys(data).length)return toast('Nothing saved yet to back up','warn');
+  const payload={app:'PG-Roster',format:1,exportedAt:new Date().toISOString(),
+    department:profile.department||'',summary:backupSummary(data),data};
+  const text=JSON.stringify(payload,null,1);
+  const stamp=new Date().toISOString().slice(0,10);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+  a.download=`${fileTag()}-backup-${stamp}.json`;
+  a.click();
+  safeSet(LAST_BACKUP_KEY,String(Date.now()));
+  renderBackupUI();
+  toast(`Backup saved — ${summaryText(payload.summary)} (${Math.max(1,Math.round(text.length/1024))} KB)`,'success');
+}
+
+function pickRestoreFile(){document.getElementById('restoreFileInput').click();}
+function handleRestoreFile(ev){
+  const file=ev.target.files&&ev.target.files[0];
+  ev.target.value='';                       // let the same file be picked twice
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    let p;
+    try{p=JSON.parse(e.target.result);}
+    catch(err){return toast('That file is not a valid backup (could not read it)','danger');}
+    if(!p||typeof p!=='object'||!p.data||typeof p.data!=='object')
+      return toast('That JSON is not a PG-Roster backup','danger');
+    const keys=backupKeys().filter(k=>p.data[k]!==undefined);
+    if(!keys.length)return toast('That backup contains no roster data','danger');
+    const s=p.summary&&typeof p.summary==='object'?p.summary:backupSummary(p.data);
+    const when=p.exportedAt?new Date(p.exportedAt).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'unknown date';
+    const now=summaryText(backupSummary(Object.fromEntries(backupKeys().map(k=>[k,localStorage.getItem(k)]))));
+    if(!confirm(
+      `Restore this backup?\n\n`+
+      `From: ${when}\n`+
+      `Contains: ${summaryText(s)}\n\n`+
+      `This REPLACES everything currently in this browser:\n${now}\n\n`+
+      `Back up first if you are not sure.`))return;
+    backupKeys().forEach(k=>localStorage.removeItem(k));
+    keys.forEach(k=>{try{localStorage.setItem(k,p.data[k]);}catch(err){}});
+    toast('Backup restored — reloading…','success');
+    setTimeout(()=>location.reload(),600);
+  };
+  r.onerror=()=>toast('Could not read that file','danger');
+  r.readAsText(file);
+}
+
+function renderBackupUI(){
+  const el=document.getElementById('backupStatus');if(!el)return;
+  const raw=localStorage.getItem(LAST_BACKUP_KEY);
+  const s=backupSummary(Object.fromEntries(backupKeys().map(k=>[k,localStorage.getItem(k)])));
+  let html=`<div style="font-size:10.5px;color:var(--muted);line-height:1.5">Currently held: <b>${summaryText(s)}</b></div>`;
+  if(raw){
+    const d=new Date(Number(raw));
+    const days=Math.floor((Date.now()-d.getTime())/86400000);
+    const stale=days>=30;
+    html+=`<div style="font-size:10.5px;margin-top:4px;color:${stale?'var(--warn)':'var(--success)'}">
+      ${stale?'⚠':'✓'} Last backup ${days===0?'today':days===1?'yesterday':days+' days ago'} (${d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})})
+    </div>`;
+  } else {
+    html+=`<div style="font-size:10.5px;margin-top:4px;color:var(--warn)">⚠ Never backed up on this browser</div>`;
+  }
   el.innerHTML=html;
 }
 
@@ -3126,7 +3241,7 @@ function applyParsedRowsToRoster(rows){
 window.addEventListener('DOMContentLoaded',()=>{
   if(!storageAvailable())showStorageBanner();
   loadRules();loadProfile();updateLetterheadBadge();
-  loadMemberData();renderYearMgmt();renderRulesUI();renderHistoryUI();renderSnapsUI();renderWordFilesUI();
+  loadMemberData();renderYearMgmt();renderRulesUI();renderHistoryUI();renderSnapsUI();renderWordFilesUI();renderBackupUI();
   document.getElementById('month').value=new Date().toISOString().slice(0,7);
   if(localStorage.getItem(KEY)){
     document.getElementById('loadBtn').style.display='inline-flex';
