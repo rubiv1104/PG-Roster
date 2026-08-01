@@ -86,6 +86,15 @@ textarea{resize:vertical;min-height:50px}
 .add-row{display:flex;gap:4px}
 .add-row input{flex:1;font-size:11px;padding:5px 8px}
 
+/* ── RENAME ── */
+.rn-group{margin:14px 0 6px}
+.rn-group:first-child{margin-top:0}
+.rn-row{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1.3fr);align-items:center;gap:7px;padding:5px 0;border-bottom:1px dashed var(--border)}
+.rn-row:last-child{border-bottom:none}
+.rn-old{font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rn-arrow{color:var(--muted);font-size:12px;text-align:center}
+.rn-input{font-size:12px;padding:5px 8px}
+
 /* ── FIRST RUN ── */
 .first-run{background:var(--primary-soft);border:1px solid #a5c8ff;border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.6;color:#0b4fbd;margin-bottom:10px}
 .first-run-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#08306b;margin-bottom:4px}
@@ -599,6 +608,7 @@ tr.is-sat .day-cell{color:var(--sat)}
   <button class="acc-btn open" onclick="toggleAcc(this)">🎓 Members <span class="chev">▼</span></button>
   <div class="acc-body open" id="yearMgmtUI"></div>
   <div style="padding:10px 16px;border-bottom:1px solid var(--border)">
+    <button class="btn btn-primary btn-sm btn-full" style="margin-bottom:6px" onclick="openRenameModal()" title="Replace names everywhere, including duties already filled in">✎ Rename Everyone</button>
     <button class="btn btn-warn btn-sm btn-full" onclick="showRotatePreview()">📅 Year-End Rotation</button>
     <div id="rotatePreview"></div>
   </div>
@@ -731,6 +741,29 @@ tr.is-sat .day-cell{color:var(--sat)}
     </div>
     <div class="modal-foot">
       <button class="btn btn-primary btn-sm" onclick="closeLetterhead()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME MODAL -->
+<div id="renameModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeRenameModal()">
+  <div class="modal-box rules-modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-head-title">✎ Rename everyone</div>
+        <div style="color:#8b949e;font-size:11px;margin-top:2px">Type the real names once — they update everywhere</div>
+      </div>
+      <button onclick="closeRenameModal()" aria-label="Close" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+    </div>
+    <div class="modal-body rules-modal-body">
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-bottom:12px">
+        Every name is replaced in the current roster, leave records, saved months and snapshots — so duties already filled in show the real name too. Tab moves to the next box.
+      </div>
+      <div id="renameList"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" style="color:var(--ink);border-color:var(--border)" onclick="closeRenameModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="applyRenames()">✓ Apply names</button>
     </div>
   </div>
 </div>
@@ -1291,6 +1324,7 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('rulesModal')?.style.display==='flex')closeRulesModal();
   else if(document.getElementById('letterheadModal')?.style.display==='flex')closeLetterhead();
   else if(document.getElementById('bulkAddModal')?.style.display==='flex')closeBulkAdd();
+  else if(document.getElementById('renameModal')?.style.display==='flex')closeRenameModal();
   else if(document.getElementById('helpOverlay')?.style.display==='block')hideHelp();
 });
 
@@ -1415,6 +1449,97 @@ function confirmBulkAdd(){
   });
   closeBulkAdd();renderYearMgmt();saveMemberData();
   toast(added?`Added ${added} name${added>1?'s':''}${dupes?` · skipped ${dupes} already on the list`:''}`:'All of those are already on the list','success');
+}
+
+// ── RENAME MEMBERS ────────────────────────────────────────────────────
+// Renaming has to reach everywhere a name was ever written, or the roster
+// keeps showing the old one. Deleting and re-adding a member would leave every
+// already-filled duty cell pointing at a name nobody recognises.
+function openRenameModal(){
+  if(!getAllMemberNames().length)return toast('No members to rename yet','warn');
+  const groups=[{k:'y3',l:'3rd Year',c:'tag-y3'},{k:'y2',l:'2nd Year',c:'tag-y2'},{k:'y1',l:'1st Year',c:'tag-y1'}];
+  let html='';
+  groups.forEach(({k,l,c})=>{
+    if(!memberData[k].length)return;
+    html+=`<div class="rn-group"><span class="tag ${c}" style="font-size:10px">${l}</span></div>`;
+    memberData[k].forEach((n,i)=>{
+      html+=`<div class="rn-row">
+        <span class="rn-old" title="${escHtml(n)}">${escHtml(n)}</span>
+        <span class="rn-arrow">→</span>
+        <input class="rn-input" type="text" data-year="${k}" data-idx="${i}" value="${escHtml(n)}" placeholder="Real name">
+      </div>`;
+    });
+  });
+  document.getElementById('renameList').innerHTML=html;
+  document.getElementById('renameModal').style.display='flex';
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.querySelector('#renameList .rn-input')?.select(),90);
+}
+function closeRenameModal(){
+  document.getElementById('renameModal').style.display='none';
+  document.body.style.overflow='';
+}
+
+function applyRenames(){
+  const inputs=[...document.querySelectorAll('#renameList .rn-input')];
+  const map={};let changed=0;
+  const finalNames=[];
+  for(const inp of inputs){
+    const oldName=memberData[inp.dataset.year][+inp.dataset.idx];
+    const newName=inp.value.trim();
+    if(!newName){toast('“'+oldName+'” has no name — fill every box','warn');inp.focus();return;}
+    finalNames.push(newName.toLowerCase());
+    if(newName!==oldName){map[oldName]=newName;changed++;}
+  }
+  const dupe=finalNames.find((n,i)=>finalNames.indexOf(n)!==i);
+  if(dupe)return toast('“'+dupe+'” appears twice — every name must be unique','warn');
+  if(!changed)return toast('Nothing changed','warn');
+
+  renameEverywhere(map);
+  closeRenameModal();
+  toast(`Renamed ${changed} ${changed>1?'people':'person'} everywhere ✓`,'success');
+}
+
+// Applies old→new across every place a name is stored.
+function renameEverywhere(map){
+  const to=n=>(n&&Object.prototype.hasOwnProperty.call(map,n))?map[n]:n;
+  const renameRows=data=>{(data||[]).forEach(r=>{r.m=to(r.m);r.e=to(r.e);r.n=to(r.n);});};
+  const renameKeys=obj=>{
+    if(!obj)return obj;
+    const out={};Object.entries(obj).forEach(([k,v])=>{out[to(k)]=v;});return out;
+  };
+
+  ['y3','y2','y1'].forEach(y=>{memberData[y]=memberData[y].map(to);});
+  if(roster)renameRows(roster.data);
+  leaveMap=renameKeys(leaveMap);
+  Object.values(whyMap).forEach(w=>{if(w&&w.doc)w.doc=to(w.doc);});
+
+  const dd=document.getElementById('doubleDutyList');
+  if(dd)dd.value=(dd.value||'').split(',').map(s=>s.trim()).filter(Boolean).map(to).join(', ');
+
+  // saved months: both the tallies used for carry-forward and the stored roster
+  const hist=loadHistory();
+  Object.values(hist).forEach(h=>{
+    h.dist=renameKeys(h.dist);
+    if(h.rosterSnap)renameRows(h.rosterSnap.data);
+    if(h.leaveSnap)h.leaveSnap=renameKeys(h.leaveSnap);
+  });
+  safeSet(HIST_KEY,JSON.stringify(hist));
+
+  const snaps=loadSnaps();
+  Object.values(snaps).forEach(s=>{
+    if(s.rosterSnap)renameRows(s.rosterSnap.data);
+    if(s.leaveSnap)s.leaveSnap=renameKeys(s.leaveSnap);
+  });
+  safeSet(SNAP_KEY,JSON.stringify(snaps));
+
+  // Undo entries hold the pre-rename names; replaying one would reintroduce
+  // them against a renamed member list, so the history is dropped.
+  undoStack=[];redoStack=[];updateUndoUI();
+
+  saveMemberData();getStudents();renderYearMgmt();renderLeaveUI();syncLeavesInput();
+  if(roster){save();render();calcDistNow();}
+  renderHistoryUI();renderCarryForwardUI();
 }
 
 function saveMemberData(){safeSet(KEY+'_members',JSON.stringify(memberData));}
