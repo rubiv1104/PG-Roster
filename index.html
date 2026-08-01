@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kayachikitsa Roster</title>
+<title>PG Duty Roster</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -85,6 +85,10 @@ textarea{resize:vertical;min-height:50px}
 .yb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
 .add-row{display:flex;gap:4px}
 .add-row input{flex:1;font-size:11px;padding:5px 8px}
+
+/* ── FIRST RUN ── */
+.first-run{background:var(--primary-soft);border:1px solid #a5c8ff;border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.6;color:#0b4fbd;margin-bottom:10px}
+.first-run-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#08306b;margin-bottom:4px}
 
 /* ── LEAVE ── */
 .leave-pill{display:inline-flex;align-items:center;gap:2px;background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:2px 6px;font-size:10px;font-weight:600}
@@ -342,7 +346,7 @@ tr.is-sat .day-cell{color:var(--sat)}
 
 <!-- TOP BAR -->
 <header class="topbar">
-  <div class="topbar-title">Kaya<span>chikitsa</span> Roster</div>
+  <div class="topbar-title" id="appTitle">PG Duty <span>Roster</span></div>
   <div class="topbar-actions">
     <button class="btn btn-ghost btn-sm btn-icon" id="undoBtn" onclick="undo()" disabled title="Nothing to undo  (Ctrl+Z)">↶</button>
     <button class="btn btn-ghost btn-sm btn-icon" id="redoBtn" onclick="redo()" disabled title="Nothing to redo  (Ctrl+Y)">↷</button>
@@ -376,7 +380,7 @@ tr.is-sat .day-cell{color:var(--sat)}
     <div style="background:var(--ink);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:#fff">How to Use the Roster</div>
-        <div style="color:#8b949e;font-size:12px;margin-top:3px">Kayachikitsa Duty Roster — Complete Guide</div>
+        <div style="color:#8b949e;font-size:12px;margin-top:3px">PG Duty Roster — Complete Guide</div>
       </div>
       <button onclick="hideHelp()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:14px;font-weight:700">✕ Close</button>
     </div>
@@ -514,7 +518,7 @@ tr.is-sat .day-cell{color:var(--sat)}
 
     </div>
     <div style="background:#f6f8fa;border-top:1px solid var(--border);padding:14px 24px;text-align:center;font-size:11px;color:var(--muted)">
-      PG Department of Kayachikitsa · A &amp; U Tibbia College and Hospital, New Delhi
+      <span id="helpFooter">PG duty roster · set your department in ⚙ Settings</span>
     </div>
   </div>
 </div>
@@ -560,11 +564,11 @@ tr.is-sat .day-cell{color:var(--sat)}
   <div class="acc-body open">
     <div class="field"><label>Month</label><input type="month" id="month"></div>
     <div class="field"><label>Custom Holidays (day numbers)</label><input id="holidays" placeholder="e.g. 5, 15, 26"></div>
-    <div class="field"><label>Hospital Header</label>
-      <textarea id="hospital">PG Department of Kayachikitsa
-A & U TIBBIA COLLEGE AND HOSPITAL
-KAROL BAGH, NEW DELHI – 110005</textarea>
-    </div>
+    <button class="rules-link" onclick="openLetterhead()" title="Hospital header, department and signing officer used on every export">
+      🏥 Letterhead &amp; signature
+      <span id="letterheadBadge" style="display:none"></span>
+      <span style="margin-left:auto;opacity:.55">›</span>
+    </button>
     <div class="checkbox-row"><input type="checkbox" id="morningSundayHoliday" checked onchange="onLegacyToggle('morningSundayHoliday','morningSunHolOnly')"><label>Morning duties: Sun & Holidays only</label></div>
     <div class="checkbox-row"><input type="checkbox" id="nightOffRule" checked onchange="onLegacyToggle('nightOffRule','nightOffNextDay')"><label>Night duty → next day off</label></div>
     <div class="checkbox-row"><input type="checkbox" id="y3CapRule" onchange="onLegacyToggle('y3CapRule','y3Cap')"><label>3rd year: cap evenings + nights per month</label></div>
@@ -689,6 +693,68 @@ KAROL BAGH, NEW DELHI – 110005</textarea>
 
 </main>
 </div><!-- .app -->
+
+<!-- LETTERHEAD MODAL -->
+<div id="letterheadModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeLetterhead()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-head-title">🏥 Letterhead &amp; Signature</div>
+        <div style="color:#8b949e;font-size:11px;margin-top:2px">Printed at the top and bottom of every export</div>
+      </div>
+      <button onclick="closeLetterhead()" aria-label="Close" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-bottom:12px">Filled in once and saved on this computer. The published file ships blank, so these never leave your machine.</div>
+      <div class="field">
+        <label>Hospital / institution header</label>
+        <textarea id="hospital" rows="3" placeholder="PG Department of …&#10;YOUR COLLEGE AND HOSPITAL&#10;CITY – PIN" oninput="onProfileChange()"></textarea>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">One line per line, centred at the top of the roster.</div>
+      </div>
+      <div class="field">
+        <label>Department name</label>
+        <input type="text" id="department" placeholder="e.g. Kayachikitsa" oninput="onProfileChange()">
+      </div>
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:8px">
+        <div class="field">
+          <label>Signing officer</label>
+          <input type="text" id="signName" placeholder="e.g. Dr A. Sharma" oninput="onProfileChange()">
+        </div>
+        <div class="field">
+          <label>Their title</label>
+          <input type="text" id="signTitle" placeholder="HOD" oninput="onProfileChange()">
+        </div>
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);line-height:1.5;background:var(--paper);border-radius:7px;padding:9px 11px;margin-top:4px">
+        Leave the signing officer blank and the signature block is left off the exports entirely.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-sm" onclick="closeLetterhead()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK ADD MODAL -->
+<div id="bulkAddModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBulkAdd()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-head-title" id="bulkAddTitle">⧉ Add several</div>
+      <button onclick="closeBulkAdd()" aria-label="Close" title="Close" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>One name per line</label>
+        <textarea id="bulkAddText" rows="7" placeholder="Dr A. Sharma&#10;Dr B. Iyer&#10;Dr C. Nair"></textarea>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.5">Commas and tabs work too, so you can paste straight from a list. Names already on the roll are skipped.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" style="color:var(--ink);border-color:var(--border)" onclick="closeBulkAdd()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmBulkAdd()">+ Add them</button>
+    </div>
+  </div>
+</div>
 
 <!-- RULES MODAL -->
 <div id="rulesModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeRulesModal()">
@@ -833,6 +899,44 @@ const INDIAN_HOLIDAYS={
   '2025-10-02':'Gandhi Jayanti','2025-10-23':'Diwali','2025-12-25':'Christmas'
 };
 
+// ── DEPARTMENT PROFILE ────────────────────────────────────────────────
+// Hospital header, department name and the signing officer. Kept in its own
+// store rather than baked into the export functions, so the published file
+// carries no real names and each user's own details persist locally. Saved on
+// edit — the old hospital box only persisted once a roster existed.
+const PROFILE_KEY='kaya_v5_profile';
+const PROFILE_FIELDS=['hospital','department','signName','signTitle'];
+let profile={hospital:'',department:'Kayachikitsa',signName:'',signTitle:'HOD'};
+
+function loadProfile(){
+  try{const d=localStorage.getItem(PROFILE_KEY);if(d)Object.assign(profile,JSON.parse(d));}catch(e){}
+  PROFILE_FIELDS.forEach(f=>{const el=document.getElementById(f);if(el)el.value=profile[f]||'';});
+  applyProfileBranding();
+}
+function onProfileChange(){
+  PROFILE_FIELDS.forEach(f=>{const el=document.getElementById(f);if(el)profile[f]=el.value;});
+  safeSet(PROFILE_KEY,JSON.stringify(profile));
+  applyProfileBranding();
+  if(roster){roster.hospital=profile.hospital;render();}
+}
+// The department name, once set, becomes the app's own title.
+function applyProfileBranding(){
+  const d=(profile.department||'').trim();
+  const t=document.getElementById('appTitle');
+  if(t)t.innerHTML=d?`${escHtml(d)} <span>Roster</span>`:'PG Duty <span>Roster</span>';
+  document.title=d?`${d} Roster`:'PG Duty Roster';
+  const hf=document.getElementById('helpFooter');
+  if(hf){
+    const line=hospitalLines()[0];
+    hf.textContent=line?(d?`Department of ${d} · ${line}`:line):'PG duty roster · set your department in ⚙ Settings';
+  }
+}
+// Department name for prose; falls back so exports never read "Dept. of ".
+function dept(){return (profile.department||'').trim()||'the department';}
+function deptUpper(){return dept().toUpperCase();}
+function hospitalLines(){return (profile.hospital||'').split('\n').map(l=>l.trim()).filter(Boolean);}
+function fileTag(){return (profile.department||'Roster').replace(/[^\w]+/g,'_');}
+
 // ── RULES ─────────────────────────────────────────────────────────────
 // Every rule the auto-fill obeys lives here. Anything the engine decides is
 // driven by one of these values — there are no other magic numbers in pick().
@@ -953,7 +1057,7 @@ function exportRulesSheet(){
   .chg{color:#9a6700;font-size:9pt;font-weight:bold}
   </style></head><body>
   <h1>Duty Roster — Rules in Force</h1>
-  <h2>${document.getElementById('hospital').value.split('\n')[0]||'Department of Kayachikitsa'} · generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</h2>`;
+  <h2>${escHtml(hospitalLines()[0]||('Department of '+dept()))} · generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</h2>`;
   RULE_DEFS.forEach(g=>{
     html+=`<h3>${escHtml(g.group)}</h3>`;
     if(g.hint)html+=`<p style="color:#555;font-size:9.5pt;margin:0 0 6pt">${escHtml(g.hint)}</p>`;
@@ -1075,6 +1179,26 @@ function closeRulesModal(){
   document.body.style.overflow='';
   if(roster)render();
 }
+// ── LETTERHEAD MODAL ─────────────────────────────────────────────────
+function openLetterhead(){
+  loadProfile();
+  document.getElementById('letterheadModal').style.display='flex';
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('hospital').focus(),80);
+}
+function closeLetterhead(){
+  document.getElementById('letterheadModal').style.display='none';
+  document.body.style.overflow='';
+  updateLetterheadBadge();
+}
+// Nudge the user to fill this in before their first export.
+function updateLetterheadBadge(){
+  const b=document.getElementById('letterheadBadge');if(!b)return;
+  const blank=!hospitalLines().length;
+  b.textContent=blank?'not set':'';
+  b.style.display=blank?'inline-block':'none';
+}
+
 function toggleAdvancedRules(){
   const body=document.getElementById('advRulesBody'),btn=document.getElementById('advRulesBtn');
   const open=body.style.display==='block';
@@ -1165,6 +1289,8 @@ document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   closeMenus();
   if(document.getElementById('rulesModal')?.style.display==='flex')closeRulesModal();
+  else if(document.getElementById('letterheadModal')?.style.display==='flex')closeLetterhead();
+  else if(document.getElementById('bulkAddModal')?.style.display==='flex')closeBulkAdd();
   else if(document.getElementById('helpOverlay')?.style.display==='block')hideHelp();
 });
 
@@ -1175,11 +1301,9 @@ function toggleAcc(btn){
 }
 
 // ── MEMBERS ───────────────────────────────────────────────────────────
-let memberData={
-  y3:['Dr Rubi','Dr Aman','Dr Ayush','Dr Dharnendra'],
-  y2:['Dr Kirti','Dr Anjali','Dr Vaibhav','Dr Nisha'],
-  y1:['Dr Jyoti','Dr Kundan','Dr Deepa','Dr Komal']
-};
+// Ships empty. Your own roll lives in localStorage on your machine and is
+// restored on every visit — nobody's name belongs in a public repository.
+let memberData={y3:[],y2:[],y1:[]};
 function renderYearMgmt(){
   const cfg=[
     {key:'y3',label:'3rd Year',cls:'tag-y3'},
@@ -1187,13 +1311,22 @@ function renderYearMgmt(){
     {key:'y1',label:'1st Year',cls:'tag-y1'}
   ];
   let html='';
+  if(!getAllMemberNames().length){
+    html+=`<div class="first-run">
+      <div class="first-run-title">👋 Start by adding your PGs</div>
+      Type a name under each year and press Enter, or use <b>paste a list</b> to add a whole batch at once.
+      Names are saved on this computer and carry over every month — you only do this once.
+    </div>`;
+  }
   cfg.forEach(({key,label,cls})=>{
     const members=memberData[key];
     html+=`<div class="year-block">
-      <div class="yb-head"><span class="tag ${cls}">${label} · ${members.length}</span></div>
+      <div class="yb-head"><span class="tag ${cls}">${label} · ${members.length}</span>
+        <button class="btn btn-ghost btn-sm" style="color:var(--muted);border-color:var(--border);font-size:10px;padding:3px 8px" onclick="openBulkAdd('${key}')" title="Paste several names at once">⧉ Paste list</button>
+      </div>
       <div class="tags-wrap">
         ${members.map(m=>`<span class="tag ${cls} tag-rm">${escHtml(m)}<button onclick="removeMember('${key}','${esc(m)}')" aria-label="Remove ${escHtml(m)}">×</button></span>`).join('')}
-        ${!members.length?`<span style="color:var(--muted);font-size:11px;font-style:italic">None — add below</span>`:''}
+        ${!members.length?`<span style="color:var(--muted);font-size:11px;font-style:italic">None yet</span>`:''}
       </div>
       <div class="add-row">
         <input type="text" id="add_${key}" placeholder="Dr Name" onkeydown="if(event.key==='Enter')addMember('${key}')">
@@ -1257,6 +1390,33 @@ function doRotation(){
   document.getElementById('rotatePreview').innerHTML=`<div class="rotate-box" style="background:var(--success-soft);border-color:#86efac;color:var(--success)">✅ Done! Now add new 1st year members above.</div>`;
   renderYearMgmt();saveMemberData();toast('Year rotation complete','success');
 }
+// ── BULK ADD ──────────────────────────────────────────────────────────
+// Re-entering a whole batch one name at a time is tedious, and after a
+// year-end rotation you do exactly that. Accepts newlines, commas or tabs.
+let bulkTargetYear='y3';
+function openBulkAdd(yr){
+  bulkTargetYear=yr;
+  const label={y3:'3rd Year',y2:'2nd Year',y1:'1st Year'}[yr];
+  document.getElementById('bulkAddTitle').textContent=`⧉ Add several to ${label}`;
+  document.getElementById('bulkAddText').value='';
+  document.getElementById('bulkAddModal').style.display='flex';
+  setTimeout(()=>document.getElementById('bulkAddText').focus(),80);
+}
+function closeBulkAdd(){document.getElementById('bulkAddModal').style.display='none';}
+function confirmBulkAdd(){
+  const raw=document.getElementById('bulkAddText').value;
+  const names=raw.split(/[\n,\t;]+/).map(s=>s.trim()).filter(Boolean);
+  if(!names.length)return toast('Nothing to add','warn');
+  const existing=getAllMemberNames().map(n=>n.toLowerCase());
+  let added=0,dupes=0;
+  names.forEach(n=>{
+    if(existing.includes(n.toLowerCase())){dupes++;return;}
+    memberData[bulkTargetYear].push(n);existing.push(n.toLowerCase());added++;
+  });
+  closeBulkAdd();renderYearMgmt();saveMemberData();
+  toast(added?`Added ${added} name${added>1?'s':''}${dupes?` · skipped ${dupes} already on the list`:''}`:'All of those are already on the list','success');
+}
+
 function saveMemberData(){safeSet(KEY+'_members',JSON.stringify(memberData));}
 function loadMemberData(){const d=localStorage.getItem(KEY+'_members');if(d)memberData=JSON.parse(d);}
 
@@ -1351,7 +1511,7 @@ function initTable(){
     if(y===yr&&m===mo&&!hols.includes(day))hols.push(day);
   });
   pushUndo('create table'); // no-op on the very first table, when there is nothing to go back to
-  roster={year:yr,month:mo,hospital:document.getElementById('hospital').value,data:[]};
+  roster={year:yr,month:mo,hospital:profile.hospital,data:[]};
   // A night is "bad" if the next day is a day off. On the last day of the month
   // that means checking next month's 1st against the national holiday list —
   // the in-month holiday array can't answer for it.
@@ -1377,7 +1537,7 @@ function initTable(){
 // ── RENDER ────────────────────────────────────────────────────────────
 function render(){
   if(!roster)return;
-  const{data,year,month,hospital}=roster;
+  const{data,year,month}=roster;
   const monthName=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   const filled=data.reduce((a,r)=>a+(r.m?1:0)+(r.e?1:0)+(r.n?1:0),0);
   const total=data.length*3;
@@ -1396,7 +1556,7 @@ function render(){
   let html=`<div class="roster-wrap">
     <div class="roster-hdr">
       <div>
-        <div class="roster-meta">${hospital.split('\n').slice(0,2).join(' · ')}</div>
+        <div class="roster-meta">${escHtml(hospitalLines().slice(0,2).join(' · '))||'<span style="opacity:.7">Set your letterhead in ⚙ Settings</span>'}</div>
         <h2>Duty Roster · ${monthName}</h2>
       </div>
       <div style="font-size:11px;color:#8b949e;text-align:right">
@@ -1947,7 +2107,7 @@ function calcDistNow(){
 
 function renderDist(cnt){
   const groups=[{l:'3rd Year',m:y3,c:'tag-y3'},{l:'2nd Year',m:y2,c:'tag-y2'},{l:'1st Year',m:y1,c:'tag-y1'}];
-  // normalize: trim + lowercase for comparison so "Dr Rubi " and "Dr Rubi" don't both appear
+  // normalize: trim + lowercase for comparison so "Dr Smith " and "Dr Smith" don't both appear
   const norm=s=>s.trim().toLowerCase();
   const knownNorms=new Set([...y3,...y2,...y1].map(norm));
   // only show in Other if truly not in any year group (by normalized name)
@@ -2046,7 +2206,7 @@ function exportDistWord(){
   tr.sep td{background:#e2e8f0;font-weight:700;font-size:10pt}
   </style></head><body><div class="WordSection1">
   <h3>Duty Distribution — ${mn}</h3>
-  <h4>Department of Kayachikitsa</h4>
+  <h4>Department of ${escHtml(dept())}</h4>
   <table>
   <tr><th>Name</th><th>Year</th><th>Mornings</th><th>Evenings</th><th>Nights</th><th>Bad Nights</th><th>Total</th></tr>`;
 
@@ -2079,7 +2239,7 @@ function exportDistPDF(){
   const doc=new jsPDF({format:'a4'});
   doc.setFont('times','normal');
   doc.setFontSize(13);doc.text(`Duty Distribution — ${mn}`,105,14,{align:'center'});
-  doc.setFontSize(10);doc.text('Department of Kayachikitsa',105,20,{align:'center'});
+  doc.setFontSize(10);doc.text(`Department of ${dept()}`,105,20,{align:'center'});
 
   const body=[];let lastYear='';
   rows.forEach(([name,yr,m,e,n,bad,tot])=>{
@@ -2153,11 +2313,11 @@ function addAllHolidays(){if(!roster)return;const{year,month}=roster;const hols=
 // ── EXPORTS ───────────────────────────────────────────────────────────
 function exportPDF(){
   if(!roster||!jsPDF)return toast('Create table first');
-  const{data,year,month,hospital}=roster;
+  const{data,year,month}=roster;
   const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   const doc=new jsPDF({format:'a4'});doc.setFont('times','normal');let y=14;
-  doc.setFontSize(12);hospital.split('\n').forEach(l=>{doc.text(l.trim(),105,y,{align:'center'});y+=5.5;});
-  doc.setFontSize(11);doc.text(`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${mn}`,105,y,{align:'center'});y+=8;
+  doc.setFontSize(12);hospitalLines().forEach(l=>{doc.text(l,105,y,{align:'center'});y+=5.5;});
+  doc.setFontSize(11);doc.text(`Duty roster for PG students of Dept. of ${deptUpper()} for the month of ${mn}`,105,y,{align:'center'});y+=8;
   doc.autoTable({startY:y,head:[['Date','Day','Morning','Evening','Night']],body:data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']),
     styles:{font:'times',fontSize:8.2,cellPadding:1.4,lineColor:[180,200,220],lineWidth:0.1},
     headStyles:{fillColor:[0,176,190],textColor:255,fontStyle:'bold',halign:'center'},
@@ -2167,31 +2327,45 @@ function exportPDF(){
   });
   let fy=doc.lastAutoTable.finalY+6;doc.setFontSize(9.5);
   doc.text('The next day of night duty will be considered as off.',14,fy);
-  doc.text('The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.',14,fy+5);
+  doc.text(`The duty will not be interchanged without prior permission of ${profile.signTitle||'HOD'} of ${deptUpper()} department.`,14,fy+5);
   doc.text('Copy to:',14,fy+12);doc.text('All PG Students',14,fy+17);
-  doc.setFont('times','bold');doc.text('Dr Sujata Yadav',150,fy+24);
-  doc.setFont('times','normal');doc.text('HOD, Department of Kayachikitsa',150,fy+29);
-  doc.save(`Kayachikitsa_${mn.replace(' ','_')}.pdf`);
+  if(profile.signName){
+    doc.setFont('times','bold');doc.text(profile.signName,150,fy+24);
+    doc.setFont('times','normal');doc.text(`${profile.signTitle||'HOD'}, Department of ${dept()}`,150,fy+29);
+  }
+  doc.save(`${fileTag()}_${mn.replace(' ','_')}.pdf`);
 }
 function exportWord(){
   if(!roster)return toast('Create first');
-  const{data,year,month,hospital}=roster;
+  const{data,year,month}=roster;
   const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   let html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="UTF-8"><title>Roster</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt 36pt 36pt 36pt;}div.WordSection1{page:WordSection1;}body{font-family:"Times New Roman",serif;font-size:10pt}h3{margin:1pt 0;text-align:center;font-size:12pt}h4{margin:2pt 0;text-align:center;font-size:11pt;font-weight:normal}table{border-collapse:collapse;width:100%;table-layout:fixed}col.c1{width:9%}col.c2{width:12%}col.c3{width:26.3%}col.c4{width:26.3%}col.c5{width:26.4%}th{background:#00b0be;color:#fff;padding:2pt 1pt;border:0.5pt solid #444;font-size:9.5pt;text-align:center}td{border:0.5pt solid #777;padding:1.5pt 1pt;text-align:center;font-size:9pt;line-height:1.05;vertical-align:middle}tr{page-break-inside:avoid}.hol{background:#eef7fa}.dms{font-weight:bold}p{margin:3pt 0;font-size:9.5pt}</style></head><body><div class="WordSection1">`;
-  hospital.split('\n').forEach(l=>html+=`<h3>${l}</h3>`);
-  html+=`<h4>Duty roster for PG students of Dept. of KAYACHIKITSA for ${mn}</h4><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><tr><th>Date</th><th>Day</th><th>Morning</th><th>Evening</th><th>Night</th></tr>`;
+  hospitalLines().forEach(l=>html+=`<h3>${escHtml(l)}</h3>`);
+  html+=`<h4>Duty roster for PG students of Dept. of ${escHtml(deptUpper())} for ${mn}</h4><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><tr><th>Date</th><th>Day</th><th>Morning</th><th>Evening</th><th>Night</th></tr>`;
   data.forEach(r=>{const c=r.isHol||r.dayName==='Sunday'?' class="hol"':'';html+=`<tr${c}><td>${r.date}</td><td>${r.dayName.substring(0,3)}</td><td>${r.mD?`<span class="dms">${r.m||'-'}</span>`:r.m||'-'}</td><td>${r.eD?`<span class="dms">${r.e||'-'}</span>`:r.e||'-'}</td><td>${r.nD?`<span class="dms">${r.n||'-'}</span>`:r.n||'-'}</td></tr>`;});
-  html+=`</table><p>The next day of night duty will be considered as off.<br>The duty will not be interchanged without prior permission of HOD.</p><p>Copy to: All PG Students</p><p style="text-align:right;margin-top:12pt"><b>Dr Sujata Yadav</b><br>HOD, Kayachikitsa</p></div></body></html>`;
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff',html],{type:'application/msword'}));a.download=`Kayachikitsa_${mn.replace(' ','_')}.doc`;a.click();
+  const sig=profile.signName?`<p style="text-align:right;margin-top:12pt"><b>${escHtml(profile.signName)}</b><br>${escHtml(profile.signTitle||'HOD')}, ${escHtml(dept())}</p>`:'';
+  html+=`</table><p>The next day of night duty will be considered as off.<br>The duty will not be interchanged without prior permission of ${escHtml(profile.signTitle||'HOD')}.</p><p>Copy to: All PG Students</p>${sig}</div></body></html>`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff',html],{type:'application/msword'}));a.download=`${fileTag()}_${mn.replace(' ','_')}.doc`;a.click();
   toast('Word exported','success');
 }
 function exportExcel(){
   if(!roster)return;
-  const{data,year,month,hospital}=roster;
+  const{data,year,month}=roster;
   const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const ws=XLSX.utils.aoa_to_sheet([...hospital.split('\n').map(l=>[l]),[`Duty roster for PG students of Dept. of KAYACHIKITSA for the month of ${mn}`],[],['Date','Day','Morning','Evening','Night'],...data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']),[], ['The next day of night duty will be considered as off.'],['The duty will not be interchanged without prior permission of HOD of KAYACHIKITSA department.'],[], ['Copy to:'],['All PG Students'],[],['','','','Dr Sujata Yadav'],['','','','HOD, Department of Kayachikitsa']]);
+  const title=profile.signTitle||'HOD';
+  const rows=[
+    ...hospitalLines().map(l=>[l]),
+    [`Duty roster for PG students of Dept. of ${deptUpper()} for the month of ${mn}`],[],
+    ['Date','Day','Morning','Evening','Night'],
+    ...data.map(r=>[r.date,r.dayName,r.m||'-',r.e||'-',r.n||'-']),[],
+    ['The next day of night duty will be considered as off.'],
+    [`The duty will not be interchanged without prior permission of ${title} of ${deptUpper()} department.`],[],
+    ['Copy to:'],['All PG Students']
+  ];
+  if(profile.signName)rows.push([],['','','',profile.signName],['','','',`${title}, Department of ${dept()}`]);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Roster');
-  XLSX.writeFile(wb,`Kayachikitsa_${mn.replace(' ','_')}.xlsx`);
+  XLSX.writeFile(wb,`${fileTag()}_${mn.replace(' ','_')}.xlsx`);
 }
 
 // ── SAVE / LOAD ───────────────────────────────────────────────────────
@@ -2199,7 +2373,7 @@ function save(){
   if(!roster)return;
   // Rules live in their own store (RULES_KEY) and are deliberately NOT part of
   // the draft — loading an old draft must not quietly revert rule changes.
-  safeSet(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,hospital:document.getElementById('hospital').value,doubleDuty:document.getElementById('doubleDutyList').value}}));
+  safeSet(KEY,JSON.stringify({roster,leaveMap,settings:{holidays:document.getElementById('holidays').value,leaves:document.getElementById('leaves').value,doubleDuty:document.getElementById('doubleDutyList').value}}));
   document.getElementById('loadBtn').style.display='inline-flex';
   document.getElementById('saveHistBtn').style.display='inline-flex';
   document.getElementById('snapBtn').style.display='inline-flex';
@@ -2210,7 +2384,6 @@ function loadDraft(){
   if(p.settings){
     document.getElementById('holidays').value=p.settings.holidays||'';
     document.getElementById('leaves').value=p.settings.leaves||'';
-    document.getElementById('hospital').value=p.settings.hospital||'';
     document.getElementById('doubleDutyList').value=p.settings.doubleDuty||'';
     renderDoubleDutyPicker();
     // Drafts written before the Rules panel existed carried these three inline.
@@ -2270,7 +2443,8 @@ function loadFromHistory(key){
   roster=h.rosterSnap;whyMap={};
   if(h.leaveSnap)leaveMap=h.leaveSnap;
   // restore settings inputs
-  if(roster.hospital)document.getElementById('hospital').value=roster.hospital;
+  // Letterhead belongs to the department, not to an archived month — don't let
+  // an old snapshot overwrite what the user has set now.
   const mv=`${roster.year}-${String(roster.month).padStart(2,'0')}`;
   document.getElementById('month').value=mv;
   getStudents();renderLeaveUI();render();updateGCalList();renderCarryForwardUI();
@@ -2446,7 +2620,8 @@ function restoreSnap(id){
   pushUndo(`restore snapshot "${s.label}"`);
   roster=s.rosterSnap;whyMap={};
   if(s.leaveSnap)leaveMap=s.leaveSnap;
-  if(roster.hospital)document.getElementById('hospital').value=roster.hospital;
+  // Letterhead belongs to the department, not to an archived month — don't let
+  // an old snapshot overwrite what the user has set now.
   document.getElementById('month').value=`${roster.year}-${String(roster.month).padStart(2,'0')}`;
   getStudents();renderLeaveUI();render();updateGCalList();renderCarryForwardUI();
   save();
@@ -2825,7 +3000,7 @@ function applyParsedRowsToRoster(rows){
 // ── INIT ──────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
   if(!storageAvailable())showStorageBanner();
-  loadRules();
+  loadRules();loadProfile();updateLetterheadBadge();
   loadMemberData();renderYearMgmt();renderRulesUI();renderHistoryUI();renderSnapsUI();renderWordFilesUI();
   document.getElementById('month').value=new Date().toISOString().slice(0,7);
   if(localStorage.getItem(KEY)){
