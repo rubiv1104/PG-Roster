@@ -972,6 +972,8 @@ function loadProfile(){
 function onProfileChange(){
   PROFILE_FIELDS.forEach(f=>{const el=document.getElementById(f);if(el)profile[f]=el.value;});
   safeSet(PROFILE_KEY,JSON.stringify(profile));
+  if(hospitalLines().length)localStorage.removeItem(LETTERHEAD_ACK);
+  updateLetterheadBadge();
   applyProfileBranding();
   if(roster){roster.hospital=profile.hospital;render();}
 }
@@ -2459,8 +2461,26 @@ function addToGCal(date,title){window.open(`https://calendar.google.com/calendar
 function addAllHolidays(){if(!roster)return;const{year,month}=roster;const hols=document.getElementById('holidays').value.split(',').map(d=>parseInt(d)).filter(Boolean);hols.forEach((d,i)=>{const dt=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;setTimeout(()=>addToGCal(dt,'Holiday'),i*220);});toast('Opening GCal tabs...','success');}
 
 // ── EXPORTS ───────────────────────────────────────────────────────────
+// An export with no letterhead looks like an unofficial document, and losing
+// it is silent — the file just comes out plain. Ask once rather than let a
+// month's roster go out headless.
+const LETTERHEAD_ACK='kaya_v5_letterhead_ack';
+function ensureLetterhead(){
+  if(hospitalLines().length)return true;
+  if(localStorage.getItem(LETTERHEAD_ACK))return true;
+  const setNow=confirm([
+    'Your letterhead is empty.','',
+    'This file will print with no hospital header and no signature block.','',
+    'OK  —  set it up now (nothing is exported yet)',
+    'Cancel  —  export plain, and stop asking'
+  ].join('\n'));
+  if(setNow){openLetterhead();return false;}
+  safeSet(LETTERHEAD_ACK,'1');
+  return true;
+}
 function exportPDF(){
   if(!roster||!jsPDF)return toast('Create table first');
+  if(!ensureLetterhead())return;
   const{data,year,month}=roster;
   const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   const doc=new jsPDF({format:'a4'});doc.setFont('times','normal');let y=14;
@@ -2485,6 +2505,7 @@ function exportPDF(){
 }
 function exportWord(){
   if(!roster)return toast('Create first');
+  if(!ensureLetterhead())return;
   const{data,year,month}=roster;
   const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   let html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="UTF-8"><title>Roster</title><style>@page WordSection1{size:595.3pt 841.9pt;margin:36pt 36pt 36pt 36pt;}div.WordSection1{page:WordSection1;}body{font-family:"Times New Roman",serif;font-size:10pt}h3{margin:1pt 0;text-align:center;font-size:12pt}h4{margin:2pt 0;text-align:center;font-size:11pt;font-weight:normal}table{border-collapse:collapse;width:100%;table-layout:fixed}col.c1{width:9%}col.c2{width:12%}col.c3{width:26.3%}col.c4{width:26.3%}col.c5{width:26.4%}th{background:#00b0be;color:#fff;padding:2pt 1pt;border:0.5pt solid #444;font-size:9.5pt;text-align:center}td{border:0.5pt solid #777;padding:1.5pt 1pt;text-align:center;font-size:9pt;line-height:1.05;vertical-align:middle}tr{page-break-inside:avoid}.hol{background:#eef7fa}.dms{font-weight:bold}p{margin:3pt 0;font-size:9.5pt}</style></head><body><div class="WordSection1">`;
@@ -2498,6 +2519,7 @@ function exportWord(){
 }
 function exportExcel(){
   if(!roster)return;
+  if(!ensureLetterhead())return;
   const{data,year,month}=roster;
   const mn=new Date(year,month-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   const title=profile.signTitle||'HOD';
